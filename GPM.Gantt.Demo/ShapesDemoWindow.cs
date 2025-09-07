@@ -4,6 +4,7 @@ using GPM.Gantt;
 using GPM.Gantt.Configuration;
 using GPM.Gantt.Models;
 using GPM.Gantt.Rendering;
+using TaskStatus = GPM.Gantt.Models.TaskStatus;
 
 namespace GPM.Gantt.Demo
 {
@@ -17,7 +18,7 @@ namespace GPM.Gantt.Demo
 
         public ShapesDemoWindow()
         {
-            InitializeComponent();
+            // InitializeComponent();
             
             _tasks = new ObservableCollection<GanttTask>();
             _ganttContainer = new GanttContainer
@@ -35,6 +36,7 @@ namespace GPM.Gantt.Demo
                         EnableVirtualization = false // Disable for demo clarity
                     }
                 }
+        
             };
 
             CreateSampleTasks();
@@ -137,6 +139,7 @@ namespace GPM.Gantt.Demo
                 },
                 Status = TaskStatus.InProgress
             });
+
         }
 
         private void SetupUI()
@@ -145,6 +148,8 @@ namespace GPM.Gantt.Demo
             Width = 1200;
             Height = 600;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
+
+            _ganttContainer.TaskRowHeight = new GridLength(30);
 
             var mainGrid = new System.Windows.Controls.Grid();
             

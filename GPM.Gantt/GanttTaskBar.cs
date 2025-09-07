@@ -58,7 +58,7 @@ namespace GPM.Gantt
         /// </summary>
         public static readonly DependencyProperty StatusProperty = DependencyProperty.Register(
             nameof(Status), typeof(Models.TaskStatus), typeof(GanttTaskBar), 
-            new FrameworkPropertyMetadata(Models.TaskStatus.NotStarted));
+            new FrameworkPropertyMetadata(Models.TaskStatus.NotStarted, OnStatusChanged));
 
         public Models.TaskStatus Status
         {
@@ -156,6 +156,7 @@ namespace GPM.Gantt
             InitializeTemplate();
             InitializeContextMenu();
             SetupEventHandlers();
+            ApplyDefaultTheme();
         }
 
         private void InitializeTemplate()
@@ -172,6 +173,18 @@ namespace GPM.Gantt
                 CornerRadius = new CornerRadius(2)
             };
             
+            // Apply theme-aware styling to progress bar if possible
+            try
+            {
+                _progressBar.SetResourceReference(Border.BackgroundProperty, "GanttTaskCompletedBrush");
+                _progressBar.Opacity = 0.3; // Make it semi-transparent
+            }
+            catch
+            {
+                // Fallback to default if theme resource isn't available yet
+                _progressBar.Background = new SolidColorBrush(Color.FromArgb(80, 76, 175, 80));
+            }
+            
             // Create text block
             _textBlock = new TextBlock
             {
@@ -179,9 +192,13 @@ namespace GPM.Gantt
                 HorizontalAlignment = HorizontalAlignment.Left,
                 TextTrimming = TextTrimming.CharacterEllipsis,
                 Margin = new Thickness(4, 0, 4, 0),
-                Foreground = Brushes.White,
                 FontWeight = FontWeights.Medium
             };
+            
+            // Set theme-aware properties via resource bindings
+            _textBlock.SetResourceReference(TextBlock.ForegroundProperty, "GanttTaskTextBrush");
+            _textBlock.SetResourceReference(TextBlock.FontFamilyProperty, "GanttTaskFontFamily");
+            _textBlock.SetResourceReference(TextBlock.FontSizeProperty, "GanttTaskFontSize");
             
             // Bind text to CustomText property
             _textBlock.SetBinding(TextBlock.TextProperty, new Binding(nameof(CustomText)) { Source = this });
@@ -247,6 +264,14 @@ namespace GPM.Gantt
             if (d is GanttTaskBar taskBar)
             {
                 taskBar.UpdateProgressDisplay();
+            }
+        }
+
+        private static void OnStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is GanttTaskBar taskBar)
+            {
+                taskBar.UpdateTaskBarStyling();
             }
         }
 
@@ -401,6 +426,54 @@ namespace GPM.Gantt
         private void OnTaskDoubleClicked()
         {
             TaskDoubleClicked?.Invoke(this, new TaskBarEventArgs(this, "Edit"));
+        }
+
+        /// <summary>
+        /// Applies default theme styling to the task bar using resource references.
+        /// </summary>
+        private void ApplyDefaultTheme()
+        {
+            try
+            {
+                // Apply theme-aware background color based on task status
+                this.SetResourceReference(BackgroundProperty, "GanttTaskDefaultBrush");
+                this.SetResourceReference(BorderBrushProperty, "GanttTaskBorderBrush");
+                this.SetResourceReference(BorderThicknessProperty, "GanttTaskBorderThickness");
+                this.SetResourceReference(CornerRadiusProperty, "GanttTaskCornerRadius");
+            }
+            catch
+            {
+                // Fallback to hardcoded values if theme resources aren't available yet
+                Background = new SolidColorBrush(Color.FromRgb(33, 150, 243)); // Default blue
+                BorderBrush = new SolidColorBrush(Color.FromRgb(25, 118, 210));
+                BorderThickness = new Thickness(1);
+                CornerRadius = new CornerRadius(4);
+            }
+        }
+
+        /// <summary>
+        /// Updates the task bar styling based on current status.
+        /// </summary>
+        private void UpdateTaskBarStyling()
+        {
+            try
+            {
+                string backgroundResourceKey = Status switch
+                {
+                    Models.TaskStatus.Completed => "GanttTaskCompletedBrush",
+                    Models.TaskStatus.InProgress => "GanttTaskInProgressBrush",
+                    Models.TaskStatus.Cancelled => "GanttTaskOverdueBrush", // Use overdue color for cancelled
+                    Models.TaskStatus.OnHold => "GanttTaskOverdueBrush", // Use overdue color for on hold
+                    _ => "GanttTaskDefaultBrush"
+                };
+                
+                this.SetResourceReference(BackgroundProperty, backgroundResourceKey);
+            }
+            catch
+            {
+                // Fallback to default color if resource binding fails
+                Background = new SolidColorBrush(Color.FromRgb(33, 150, 243));
+            }
         }
 
         #endregion

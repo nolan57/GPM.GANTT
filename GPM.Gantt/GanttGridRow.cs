@@ -7,7 +7,28 @@ namespace GPM.Gantt
     {
         public GanttGridRow()
         {
-            BorderBrush = Brushes.Silver;
+            ApplyDefaultTheme();
+        }
+        
+        /// <summary>
+        /// Applies default theme styling to the grid row using resource references.
+        /// </summary>
+        private void ApplyDefaultTheme()
+        {
+            try
+            {
+                // Apply theme-aware styling
+                this.SetResourceReference(BackgroundProperty, "GanttSecondaryBackgroundBrush");
+                this.SetResourceReference(BorderBrushProperty, "GanttGridLineBrush");
+                this.SetResourceReference(BorderThicknessProperty, "GanttGridLineThickness");
+            }
+            catch
+            {
+                // Fallback to hardcoded values if theme resources aren't available yet
+                BorderBrush = Brushes.Silver;
+                Background = Brushes.Transparent;
+                BorderThickness = new System.Windows.Thickness(0.5);
+            }
         }
     }
 }

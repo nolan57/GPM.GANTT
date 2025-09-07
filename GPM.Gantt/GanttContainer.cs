@@ -306,6 +306,31 @@ namespace GPM.Gantt
         private readonly List<UIElement> _visibleElements = new();
         private readonly Dictionary<int, double> _rowHeightCache = new();
 
+        private void LogState(string source)
+        {
+            try
+            {
+                // Ensure a file trace listener exists (lazy init)
+                var listenerName = "GanttContainerFile";
+                if (System.Diagnostics.Trace.Listeners[listenerName] == null)
+                {
+                    var logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GanttContainer.log");
+                    try
+                    {
+                        var fileListener = new System.Diagnostics.TextWriterTraceListener(logPath, listenerName);
+                        System.Diagnostics.Trace.Listeners.Add(fileListener);
+                        System.Diagnostics.Trace.AutoFlush = true;
+                    }
+                    catch { }
+                }
+
+                var msg = $"[{DateTime.Now:HH:mm:ss.fff}] {source} | IsLoaded={IsLoaded}, _isLayoutInvalidated={_isLayoutInvalidated}, Children={Children?.Count}, Rows={RowDefinitions?.Count}, Cols={ColumnDefinitions?.Count}";
+                System.Diagnostics.Debug.WriteLine(msg);
+                System.Diagnostics.Trace.WriteLine(msg);
+            }
+            catch { }
+        }
+
         #region Events
 
         /// <summary>
@@ -355,6 +380,9 @@ namespace GPM.Gantt
             // Apply theme to the container
             ThemeUtilities.ApplyTheme(this, _currentTheme);
             
+            // Apply theme to existing child elements
+            ApplyThemeToChildren();
+            
             // Debounce layout refresh to avoid excessive rebuilds during theme changes
             var delay = Configuration?.Rendering?.LayoutDebounceDelay ?? 150;
             _performanceService.DebounceOperation(() =>
@@ -384,11 +412,13 @@ namespace GPM.Gantt
             SetupInteractionManager();
             
             Loaded += OnGanttContainerLoaded;
+            Unloaded += OnGanttContainerUnloaded; // add unloaded for lifecycle logging
             SizeChanged += (s, e) => 
             {
                 if (IsLoaded)
                 {
                     _isLayoutInvalidated = true; // ensure layout rebuilds on size changes
+                    LogState("SizeChanged -> set invalidated");
                     BuildLayout();
                 }
             };
@@ -397,6 +427,34 @@ namespace GPM.Gantt
             ThemeManager.ThemeChanged += OnGlobalThemeChanged;
             
             System.Diagnostics.Debug.WriteLine("GanttContainer constructor completed");
+            LogState("Constructor completed");
+        }
+        
+        private void OnGanttContainerUnloaded(object sender, RoutedEventArgs e)
+        {
+            LogState("Unloaded event - begin cleanup");
+            try
+            {
+                if (_parentScrollViewer != null)
+                {
+                    _parentScrollViewer.ScrollChanged -= OnParentScrollChanged;
+                    _parentScrollViewer = null;
+                }
+            
+            // Unsubscribe from global theme changes to avoid memory leaks while unloaded
+            ThemeManager.ThemeChanged -= OnGlobalThemeChanged;
+            
+            // Cleanup pooled/recyclable visuals to reduce retained memory
+            CleanupAndRecycleElements();
+            }
+            catch (Exception ex)
+            {
+                LogState($"Unloaded cleanup exception: {ex.Message}");
+            }
+            finally
+            {
+                LogState("Unloaded event - end cleanup");
+            }
         }
         
         private void OnGlobalThemeChanged(object? sender, ThemeChangedEventArgs e)
@@ -405,6 +463,7 @@ namespace GPM.Gantt
             if (Theme == null)
             {
                 ApplyTheme(e.CurrentTheme);
+                LogState("GlobalThemeChanged -> ApplyTheme");
             }
         }
         
@@ -426,6 +485,11 @@ namespace GPM.Gantt
         private void OnGanttContainerLoaded(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("GanttContainer loaded event fired");
+            LogState("Loaded event start");
+            
+            // Ensure ThemeChanged is subscribed after potential Unloaded cleanup
+            ThemeManager.ThemeChanged -= OnGlobalThemeChanged;
+            ThemeManager.ThemeChanged += OnGlobalThemeChanged;
             
             // Ensure we have a valid tasks collection
             if (Tasks == null)
@@ -441,6 +505,7 @@ namespace GPM.Gantt
             
             // Build layout now that the control is fully loaded
             _isLayoutInvalidated = true;
+            LogState("Loaded -> set invalidated");
             BuildLayout();
         }
 
@@ -467,6 +532,7 @@ namespace GPM.Gantt
                 if (gc.IsLoaded)
                 {
                     gc._isLayoutInvalidated = true; // mark invalid before rebuilding
+                    gc.LogState("TasksPropertyChanged -> set invalidated");
                     gc.BuildLayout();
                 }
                 else
@@ -484,6 +550,7 @@ namespace GPM.Gantt
             if (IsLoaded)
             {
                 _isLayoutInvalidated = true; // mark invalid before rebuilding
+                LogState("Tasks_CollectionChanged -> set invalidated");
                 BuildLayout();
             }
             else
@@ -497,6 +564,7 @@ namespace GPM.Gantt
             if (d is GanttContainer gc && gc.IsLoaded)
             {
                 gc._isLayoutInvalidated = true; // mark invalid before rebuilding
+                gc.LogState("LayoutPropertyChanged -> set invalidated");
                 gc.BuildLayout();
             }
         }
@@ -522,8 +590,10 @@ namespace GPM.Gantt
             // Only build if needed and loaded
             if (!_isLayoutInvalidated || !IsLoaded)
             {
+                LogState("BuildLayout skipped");
                 return;
             }
+            LogState("BuildLayout enqueued");
             
             // Use debouncing for performance
             var delay = Configuration?.Rendering?.LayoutDebounceDelay ?? 150;
@@ -533,6 +603,7 @@ namespace GPM.Gantt
         private void BuildLayoutImmediate()
         {
             using var measurement = _performanceService.BeginMeasurement("LayoutBuild");
+            LogState("BuildLayoutImmediate start");
             
             try
             {
@@ -581,6 +652,7 @@ namespace GPM.Gantt
                 }
 
                 _isLayoutInvalidated = false;
+                LogState("BuildLayoutImmediate end -> cleared invalidated");
                 System.Diagnostics.Debug.WriteLine($"Layout complete: {Children.Count} total children added");
                 
                 // Optimize memory if auto-optimization is enabled
@@ -594,6 +666,9 @@ namespace GPM.Gantt
                 // Add proper error handling
                 System.Diagnostics.Debug.WriteLine($"Layout building error: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                System.Diagnostics.Trace.WriteLine($"[LayoutError] {ex.GetType().FullName}: {ex.Message}");
+                System.Diagnostics.Trace.WriteLine(ex.StackTrace);
+                LogState("BuildLayoutImmediate exception");
             }
         }
 
@@ -893,8 +968,7 @@ namespace GPM.Gantt
             }
         }
 
-        #endregion
-
+         
         #region Public Methods
 
         /// <summary>
@@ -1167,6 +1241,123 @@ namespace GPM.Gantt
             }
             
             _visibleElements.Clear();
+        }
+        
+        /// <summary>
+        /// Applies the current theme to all existing child elements.
+        /// </summary>
+        private void ApplyThemeToChildren()
+        {
+            if (_currentTheme == null) return;
+            
+            foreach (UIElement child in Children)
+            {
+                // Apply theme resources to child elements based on their type
+                if (child is GanttTaskBar taskBar)
+                {
+                    ApplyThemeToTaskBar(taskBar);
+                }
+                else if (child is GanttTimeCell timeCell)
+                {
+                    ApplyThemeToTimeCell(timeCell);
+                }
+                else if (child is GanttGridCell gridCell)
+                {
+                    ApplyThemeToGridCell(gridCell);
+                }
+                else if (child is GanttGridRow gridRow)
+                {
+                    ApplyThemeToGridRow(gridRow);
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Applies theme styling to a task bar.
+        /// </summary>
+        private void ApplyThemeToTaskBar(GanttTaskBar taskBar)
+        {
+            try
+            {
+                // Determine background based on status
+                string backgroundResourceKey = taskBar.Status switch
+                {
+                    Models.TaskStatus.Completed => "GanttTaskCompletedBrush",
+                    Models.TaskStatus.InProgress => "GanttTaskInProgressBrush",
+                    Models.TaskStatus.Cancelled => "GanttTaskOverdueBrush", // Use overdue color for cancelled
+                    Models.TaskStatus.OnHold => "GanttTaskOverdueBrush", // Use overdue color for on hold
+                    _ => "GanttTaskDefaultBrush"
+                };
+                
+                taskBar.SetResourceReference(Control.BackgroundProperty, backgroundResourceKey);
+                taskBar.SetResourceReference(Border.BorderBrushProperty, "GanttTaskBorderBrush");
+                taskBar.SetResourceReference(Border.BorderThicknessProperty, "GanttTaskBorderThickness");
+                taskBar.SetResourceReference(Border.CornerRadiusProperty, "GanttTaskCornerRadius");
+            }
+            catch { /* Silently ignore if resources not available */ }
+        }
+        
+        /// <summary>
+        /// Applies theme styling to a time cell.
+        /// </summary>
+        private void ApplyThemeToTimeCell(GanttTimeCell timeCell)
+        {
+            try
+            {
+                timeCell.SetResourceReference(Control.BackgroundProperty, "GanttTimeScaleBackgroundBrush");
+                timeCell.SetResourceReference(Border.BorderBrushProperty, "GanttTimeScaleBorderBrush");
+                timeCell.SetResourceReference(Border.BorderThicknessProperty, "GanttTimeScaleBorderThickness");
+                
+                // Also update the text block inside
+                if (timeCell.Child is TextBlock textBlock)
+                {
+                    textBlock.SetResourceReference(TextBlock.ForegroundProperty, "GanttTimeScaleTextBrush");
+                    textBlock.SetResourceReference(TextBlock.FontFamilyProperty, "GanttTimeScaleFontFamily");
+                    textBlock.SetResourceReference(TextBlock.FontSizeProperty, "GanttTimeScaleFontSize");
+                    textBlock.SetResourceReference(TextBlock.FontWeightProperty, "GanttTimeScaleFontWeight");
+                }
+            }
+            catch { /* Silently ignore if resources not available */ }
+        }
+        
+        /// <summary>
+        /// Applies theme styling to a grid cell.
+        /// </summary>
+        private void ApplyThemeToGridCell(GanttGridCell gridCell)
+        {
+            try
+            {
+                if (gridCell.IsToday)
+                {
+                    gridCell.SetResourceReference(Control.BackgroundProperty, "GanttTodayBackgroundBrush");
+                }
+                else if (gridCell.IsWeekend)
+                {
+                    gridCell.SetResourceReference(Control.BackgroundProperty, "GanttWeekendBackgroundBrush");
+                }
+                else
+                {
+                    gridCell.SetResourceReference(Control.BackgroundProperty, "GanttSecondaryBackgroundBrush");
+                }
+                
+                gridCell.SetResourceReference(Border.BorderBrushProperty, "GanttGridLineBrush");
+                gridCell.SetResourceReference(Border.BorderThicknessProperty, "GanttGridLineThickness");
+            }
+            catch { /* Silently ignore if resources not available */ }
+        }
+        
+        /// <summary>
+        /// Applies theme styling to a grid row.
+        /// </summary>
+        private void ApplyThemeToGridRow(GanttGridRow gridRow)
+        {
+            try
+            {
+                gridRow.SetResourceReference(Control.BackgroundProperty, "GanttSecondaryBackgroundBrush");
+                gridRow.SetResourceReference(Border.BorderBrushProperty, "GanttGridLineBrush");
+                gridRow.SetResourceReference(Border.BorderThicknessProperty, "GanttGridLineThickness");
+            }
+            catch { /* Silently ignore if resources not available */ }
         }
         
         #endregion

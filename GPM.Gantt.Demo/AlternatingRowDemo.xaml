@@ -1,0 +1,73 @@
+<Window x:Class="GPM.Gantt.Demo.AlternatingRowDemo"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:gantt="clr-namespace:GPM.Gantt;assembly=GPM.Gantt"
+        Title="Alternating Row Colors Demo" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Theme Selection Controls -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
+            <TextBlock Text="Select Theme:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox x:Name="ThemeComboBox" 
+                       Width="120"
+                       SelectionChanged="ThemeComboBox_SelectionChanged">
+                <ComboBoxItem Content="Default"/>
+                <ComboBoxItem Content="Dark"/>
+                <ComboBoxItem Content="Light"/>
+                <ComboBoxItem Content="Modern"/>
+                <ComboBoxItem Content="Custom"/>
+            </ComboBox>
+            
+            <TextBlock Text="Row Color:" VerticalAlignment="Center" Margin="15,0,5,0"/>
+            <ComboBox x:Name="RowColorComboBox"
+                       Width="120"
+                       SelectionChanged="RowColorComboBox_SelectionChanged">
+                <ComboBoxItem Content="Light Blue" Tag="#E6F7FF"/>
+                <ComboBoxItem Content="Light Green" Tag="#F0FFF0"/>
+                <ComboBoxItem Content="Light Gray" Tag="#F5F5F5"/>
+                <ComboBoxItem Content="Light Orange" Tag="#FFF9E6"/>
+            </ComboBox>
+            
+            <TextBlock Text="Primary Color:" VerticalAlignment="Center" Margin="15,0,5,0"/>
+            <ComboBox x:Name="PrimaryColorComboBox"
+                       Width="120"
+                       SelectionChanged="PrimaryColorComboBox_SelectionChanged">
+                <ComboBoxItem Content="Blue" Tag="#2196F3"/>
+                <ComboBoxItem Content="Green" Tag="#4CAF50"/>
+                <ComboBoxItem Content="Orange" Tag="#FF9800"/>
+                <ComboBoxItem Content="Purple" Tag="#9C27B0"/>
+            </ComboBox>
+            
+            <TextBlock Text="Accent Color:" VerticalAlignment="Center" Margin="15,0,5,0"/>
+            <ComboBox x:Name="AccentColorComboBox"
+                       Width="120"
+                       SelectionChanged="AccentColorComboBox_SelectionChanged">
+                <ComboBoxItem Content="Orange" Tag="#FF9800"/>
+                <ComboBoxItem Content="Red" Tag="#F44336"/>
+                <ComboBoxItem Content="Blue" Tag="#2196F3"/>
+                <ComboBoxItem Content="Green" Tag="#4CAF50"/>
+            </ComboBox>
+        </StackPanel>
+        
+        <!-- Gantt Chart -->
+        <gantt:GanttContainer Grid.Row="1"
+                             x:Name="GanttChart"
+                             StartTime="{Binding StartDate}"
+                             EndTime="{Binding EndDate}"
+                             TimeUnit="Day"
+                             TaskCount="10"
+                             ShowGridCells="False"/>
+        
+        <!-- Status Bar -->
+        <StatusBar Grid.Row="2" VerticalAlignment="Bottom">
+            <StatusBarItem Content="{Binding ElementName=ThemeComboBox, Path=SelectedItem.Content, StringFormat='Theme: {0}'}"/>
+            <StatusBarItem Content="{Binding ElementName=RowColorComboBox, Path=SelectedItem.Tag, StringFormat='Row Color: {0}'}"/>
+            <StatusBarItem Content="{Binding ElementName=PrimaryColorComboBox, Path=SelectedItem.Tag, StringFormat='Primary Color: {0}'}"/>
+            <StatusBarItem Content="{Binding ElementName=AccentColorComboBox, Path=SelectedItem.Tag, StringFormat='Accent Color: {0}'}"/>
+        </StatusBar>
+    </Grid>
+</Window>

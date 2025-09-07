@@ -3,13 +3,15 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using GPM.Gantt.Interaction;
 using GPM.Gantt.Models;
 using GPM.Gantt.Services;
 
 namespace GPM.Gantt.Demo
 {
-    public partial class MainWindow : Window
+    /// <summary>
+    /// Interaction logic for AlternatingRowDemo.xaml
+    /// </summary>
+    public partial class AlternatingRowDemo : Window
     {
         private GanttTheme _defaultTheme;
         private GanttTheme _darkTheme;
@@ -17,7 +19,7 @@ namespace GPM.Gantt.Demo
         private GanttTheme _modernTheme;
         private GanttTheme _customTheme;
 
-        public MainWindow()
+        public AlternatingRowDemo()
         {
             InitializeComponent();
             InitializeThemes();
@@ -33,22 +35,41 @@ namespace GPM.Gantt.Demo
             _modernTheme = ThemeManager.GetTheme("Modern");
             
             // Create custom theme
-            _customTheme = ThemeManager.CreateCustomTheme("CustomCorporate", theme =>
+            _customTheme = ThemeManager.CreateCustomTheme("CustomAlternating", theme =>
             {
-                theme.Background.PrimaryColor = Colors.White;
-                // Replace Color.Parse with ColorConverter.ConvertFromString
                 theme.Background.PrimaryColor = Colors.White;
                 theme.Background.SecondaryColor = (Color)ColorConverter.ConvertFromString("#E6F7FF"); // Light blue
                 theme.Task.DefaultColor = (Color)ColorConverter.ConvertFromString("#2196F3"); // Blue
                 theme.TimeScale.TodayMarkerColor = (Color)ColorConverter.ConvertFromString("#FF9800"); // Orange
-
             });
             
             // Set default theme
-            Gantt.Theme = _defaultTheme;
+            GanttChart.Theme = _defaultTheme;
         }
 
-        private void ThemeComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void SetupSampleData()
+        {
+            // Set sample date range
+            var today = DateTime.Today;
+            var endDate = today.AddDays(30);
+            
+            // Create sample tasks
+            var tasks = new[]
+            {
+                new GanttTask { Title = "Project Planning", Start = today, End = today.AddDays(5), RowIndex = 1 },
+                new GanttTask { Title = "Requirement Analysis", Start = today.AddDays(5), End = today.AddDays(10), RowIndex = 2 },
+                new GanttTask { Title = "Design Phase", Start = today.AddDays(10), End = today.AddDays(15), RowIndex = 3 },
+                new GanttTask { Title = "Implementation", Start = today.AddDays(15), End = today.AddDays(25), RowIndex = 4 },
+                new GanttTask { Title = "Testing", Start = today.AddDays(25), End = today.AddDays(28), RowIndex = 5 },
+                new GanttTask { Title = "Deployment", Start = today.AddDays(28), End = today.AddDays(30), RowIndex = 6 }
+            };
+            
+            GanttChart.Tasks = new ObservableCollection<GanttTask>(tasks);
+            GanttChart.StartTime = today;
+            GanttChart.EndTime = endDate;
+        }
+
+        private void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem item)
             {
@@ -57,23 +78,23 @@ namespace GPM.Gantt.Demo
                 switch (themeName)
                 {
                     case "Default":
-                        Gantt.Theme = _defaultTheme;
+                        GanttChart.Theme = _defaultTheme;
                         UpdateColorSelection(_defaultTheme);
                         break;
                     case "Dark":
-                        Gantt.Theme = _darkTheme;
+                        GanttChart.Theme = _darkTheme;
                         UpdateColorSelection(_darkTheme);
                         break;
                     case "Light":
-                        Gantt.Theme = _lightTheme;
+                        GanttChart.Theme = _lightTheme;
                         UpdateColorSelection(_lightTheme);
                         break;
                     case "Modern":
-                        Gantt.Theme = _modernTheme;
+                        GanttChart.Theme = _modernTheme;
                         UpdateColorSelection(_modernTheme);
                         break;
                     case "Custom":
-                        Gantt.Theme = _customTheme;
+                        GanttChart.Theme = _customTheme;
                         UpdateColorSelection(_customTheme);
                         break;
                 }
@@ -125,17 +146,17 @@ namespace GPM.Gantt.Demo
             }
         }
 
-        private void RowColorComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void RowColorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdateCustomTheme();
         }
 
-        private void PrimaryColorComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void PrimaryColorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdateCustomTheme();
         }
 
-        private void AccentColorComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void AccentColorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdateCustomTheme();
         }
@@ -149,7 +170,7 @@ namespace GPM.Gantt.Demo
                 primaryItem.Tag is string primaryColorStr &&
                 accentItem.Tag is string accentColorStr)
             {
-                // Replace Color.Parse with ColorConverter.ConvertFromString and cast to Color
+                // Update custom theme with selected colors
                 var primaryColor = (Color)ColorConverter.ConvertFromString(primaryColorStr);
                 var rowColor = (Color)ColorConverter.ConvertFromString(rowColorStr);
                 var accentColor = (Color)ColorConverter.ConvertFromString(accentColorStr);
@@ -160,61 +181,8 @@ namespace GPM.Gantt.Demo
                 _customTheme.Task.DefaultColor = primaryColor;
                 
                 // Apply updated theme
-                Gantt.Theme = _customTheme;
+                GanttChart.Theme = _customTheme;
             }
-        }
-
-        private void SetupSampleData()
-        {
-            // Set sample date range
-            var today = DateTime.Today;
-            var endDate = today.AddDays(30);
-            
-            // Create sample tasks
-            var tasks = new[]
-            {
-                new GanttTask { Title = "Project Planning", Start = today, End = today.AddDays(5), RowIndex = 1 },
-                new GanttTask { Title = "Requirement Analysis", Start = today.AddDays(5), End = today.AddDays(10), RowIndex = 2 },
-                new GanttTask { Title = "Design Phase", Start = today.AddDays(10), End = today.AddDays(15), RowIndex = 3 },
-                new GanttTask { Title = "Implementation", Start = today.AddDays(15), End = today.AddDays(25), RowIndex = 4 },
-                new GanttTask { Title = "Testing", Start = today.AddDays(25), End = today.AddDays(28), RowIndex = 5 },
-                new GanttTask { Title = "Deployment", Start = today.AddDays(28), End = today.AddDays(30), RowIndex = 6 }
-            };
-            
-            Gantt.Tasks = new ObservableCollection<GanttTask>(tasks);
-            Gantt.StartTime = today;
-            Gantt.EndTime = endDate;
-        }
-
-        private void RunAlternatingRowDemo(object sender, RoutedEventArgs e)
-        {
-            // Create and show the alternating row demo window
-            var demoWindow = new AlternatingRowDemo();
-            demoWindow.Show();
-        }
-
-        private void ExitApplication(object sender, RoutedEventArgs e)
-        {
-            Application.Current.Shutdown();
-        }
-
-        private void RunCustomShapesDemo(object sender, RoutedEventArgs e)
-        {
-            // Create and show the custom shapes demo window
-            var demoWindow = new ShapesDemoWindow();
-            demoWindow.Show();
-        }
-
-        private void RunTimeScaleDemo(object sender, RoutedEventArgs e)
-        {
-            // TODO: Implement time scale demo
-            MessageBox.Show("Time Scale Demo - Coming Soon!", "Demo", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void RunInteractiveDemo(object sender, RoutedEventArgs e)
-        {
-            // TODO: Implement interactive demo
-            MessageBox.Show("Interactive Features Demo - Coming Soon!", "Demo", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }

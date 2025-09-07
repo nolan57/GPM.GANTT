@@ -140,10 +140,10 @@ namespace GPM.Gantt.Utilities
             resources["GanttHoverBrush"] = theme.Selection.HoverColor.ToBrush();
 
             // Thickness values
-            resources["GanttGridLineThickness"] = theme.Grid.LineThickness;
-            resources["GanttTaskBorderThickness"] = theme.Task.BorderThickness;
-            resources["GanttTimeScaleBorderThickness"] = theme.TimeScale.BorderThickness;
-            resources["GanttSelectionBorderThickness"] = theme.Selection.BorderThickness;
+            resources["GanttGridLineThickness"] = ToThickness(theme.Grid.LineThickness);
+            resources["GanttTaskBorderThickness"] = ToThickness(theme.Task.BorderThickness);
+            resources["GanttTimeScaleBorderThickness"] = ToThickness(theme.TimeScale.BorderThickness);
+            resources["GanttSelectionBorderThickness"] = ToThickness(theme.Selection.BorderThickness);
 
             // Corner radius
             resources["GanttTaskCornerRadius"] = ToCornerRadius(theme.Task.CornerRadius);
