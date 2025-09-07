@@ -1,0 +1,12 @@
+[
+  {
+    "Name": "新建配置文件",
+    "Projects": [
+      {
+        "Path": "GPM.Gantt.Demo\\GPM.Gantt.Demo.csproj",
+        "Action": "Start",
+        "DebugTarget": "GPM.Gantt.Demo"
+      }
+    ]
+  }
+]
