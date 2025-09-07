@@ -69,6 +69,41 @@ namespace GPM.Gantt.Models
         public List<Guid> Dependencies { get; set; } = new();
         
         /// <summary>
+        /// Gets or sets whether this task is on the critical path.
+        /// </summary>
+        public bool IsCritical { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the free float (slack) time for this task.
+        /// </summary>
+        public TimeSpan FreeFloat { get; set; } = TimeSpan.Zero;
+        
+        /// <summary>
+        /// Gets or sets the total float (slack) time for this task.
+        /// </summary>
+        public TimeSpan TotalFloat { get; set; } = TimeSpan.Zero;
+        
+        /// <summary>
+        /// Gets or sets the earliest start time based on dependencies.
+        /// </summary>
+        public DateTime? EarliestStart { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the latest start time based on dependencies.
+        /// </summary>
+        public DateTime? LatestStart { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the earliest finish time based on dependencies.
+        /// </summary>
+        public DateTime? EarliestFinish { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the latest finish time based on dependencies.
+        /// </summary>
+        public DateTime? LatestFinish { get; set; }
+        
+        /// <summary>
         /// Gets or sets the list of resources assigned to this task.
         /// </summary>
         public List<string> AssignedResources { get; set; } = new();

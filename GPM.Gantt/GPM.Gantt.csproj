@@ -7,6 +7,53 @@
     <Nullable>enable</Nullable>
     <AssemblyName>GPM.Gantt</AssemblyName>
     <RootNamespace>GPM.Gantt</RootNamespace>
+    
+    <!-- NuGet Package Properties -->
+    <PackageId>GPM.Gantt</PackageId>
+    <PackageVersion>2.1.0</PackageVersion>
+    <Authors>GPM Development Team</Authors>
+    <Company>GPM</Company>
+    <Product>GPM Gantt Chart Component</Product>
+    <Description>A modern, enterprise-grade WPF Gantt chart component library designed for high-performance project management applications. Features include task dependencies, critical path analysis, export capabilities, advanced calendar system, and template management.</Description>
+    <PackageTags>WPF;Gantt;Chart;Project-Management;Task-Dependencies;Critical-Path;Export;Calendar;Templates</PackageTags>
+    <PackageProjectUrl>https://github.com/yourorg/GPM</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>Version 2.1.0: Added task dependencies with visual lines, export to PDF/PNG, advanced calendar system, and template management.</PackageReleaseNotes>
+    <Copyright>Copyright © GPM 2024</Copyright>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    
+    <!-- Documentation -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    
+    <!-- Assembly Info -->
+    <AssemblyTitle>GPM Gantt Chart Component</AssemblyTitle>
+    <AssemblyDescription>Enterprise-grade WPF Gantt chart component with advanced features</AssemblyDescription>
+    <AssemblyConfiguration>$(Configuration)</AssemblyConfiguration>
+    <AssemblyCompany>GPM</AssemblyCompany>
+    <AssemblyProduct>GPM.Gantt</AssemblyProduct>
+    <AssemblyCopyright>Copyright © GPM 2024</AssemblyCopyright>
+    <AssemblyVersion>2.1.0.0</AssemblyVersion>
+    <FileVersion>2.1.0.0</FileVersion>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+  </ItemGroup>
 
 </Project>

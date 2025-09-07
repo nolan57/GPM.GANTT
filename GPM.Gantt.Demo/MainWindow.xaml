@@ -14,6 +14,24 @@
                 <MenuItem Header="Custom Task Shapes" Click="RunCustomShapesDemo"/>
                 <MenuItem Header="Time Scale Customization" Click="RunTimeScaleDemo"/>
                 <MenuItem Header="Interactive Features" Click="RunInteractiveDemo"/>
+                <MenuItem Header="Task Dependencies" Click="RunDependencyDemo"/>
+                <MenuItem Header="Export Features" Click="RunExportDemo"/>
+                <MenuItem Header="Calendar System" Click="RunCalendarDemo"/>
+                <MenuItem Header="Project Templates" Click="RunTemplateDemo"/>
+                <Separator/>
+                <MenuItem Header="REST API Integration" Click="RunRestApiDemo"/>
+            </MenuItem>
+            <MenuItem Header="API">
+                <MenuItem Header="Test Connection" Click="TestApiConnection"/>
+                <MenuItem Header="Set Credentials" Click="SetApiCredentials"/>
+                <Separator/>
+                <MenuItem Header="Synchronize" Click="SynchronizeWithApi"/>
+                <MenuItem Header="Upload Project" Click="UploadCurrentProject"/>
+            </MenuItem>
+            <MenuItem Header="Export">
+                <MenuItem Header="Export as PNG" Click="ExportAsPng"/>
+                <MenuItem Header="Export as PDF" Click="ExportAsPdf"/>
+                <MenuItem Header="Export as JPEG" Click="ExportAsJpeg"/>
             </MenuItem>
         </Menu>
         
@@ -66,6 +84,60 @@
                     <ComboBoxItem Content="Blue" Tag="#2196F3"/>
                     <ComboBoxItem Content="Green" Tag="#4CAF50"/>
                 </ComboBox>
+                
+                <CheckBox x:Name="ShowDependenciesCheckBox" 
+                          Content="Show Dependencies"
+                          Margin="0,15,0,5"
+                          IsChecked="True"
+                          Checked="ShowDependenciesCheckBox_Changed"
+                          Unchecked="ShowDependenciesCheckBox_Changed"/>
+                          
+                <CheckBox x:Name="HighlightCriticalPathCheckBox" 
+                          Content="Highlight Critical Path"
+                          Margin="0,5,0,5"
+                          IsChecked="True"
+                          Checked="HighlightCriticalPathCheckBox_Changed"
+                          Unchecked="HighlightCriticalPathCheckBox_Changed"/>
+                          
+                <Button x:Name="AddDependencyButton"
+                        Content="Add Sample Dependencies"
+                        Margin="0,10,0,5"
+                        Click="AddSampleDependencies"/>
+                        
+                <Button x:Name="CalculateCriticalPathButton"
+                        Content="Calculate Critical Path"
+                        Margin="0,5,0,5"
+                        Click="CalculateCriticalPath"/>
+                        
+                <TextBlock Text="Templates:" FontWeight="Bold" Margin="0,15,0,5"/>
+                <ComboBox x:Name="TemplateComboBox"
+                          Width="150"
+                          Margin="0,0,0,5"
+                          SelectionChanged="TemplateComboBox_SelectionChanged">
+                    <ComboBoxItem Content="Software Development" Tag="software"/>
+                    <ComboBoxItem Content="Marketing Campaign" Tag="marketing"/>
+                    <ComboBoxItem Content="Construction Project" Tag="construction"/>
+                </ComboBox>
+                
+                <Button x:Name="ApplyTemplateButton"
+                        Content="Apply Template"
+                        Margin="0,5,0,5"
+                        Click="ApplyTemplate"/>
+                        
+                <TextBlock Text="Calendar:" FontWeight="Bold" Margin="0,15,0,5"/>
+                <ComboBox x:Name="CalendarTypeComboBox"
+                          Width="150"
+                          Margin="0,0,0,5"
+                          SelectionChanged="CalendarTypeComboBox_SelectionChanged">
+                    <ComboBoxItem Content="Standard" Tag="Standard"/>
+                    <ComboBoxItem Content="Night Shift" Tag="NightShift"/>
+                    <ComboBoxItem Content="24 Hour" Tag="TwentyFourHour"/>
+                </ComboBox>
+                
+                <Button x:Name="ShowWorkingDaysButton"
+                        Content="Show Working Days"
+                        Margin="0,5,0,10"
+                        Click="ShowWorkingDays"/>
             </StackPanel>
             
             <!-- Gantt Chart -->

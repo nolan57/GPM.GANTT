@@ -9,8 +9,11 @@ using System.Collections.ObjectModel;
 using GPM.Gantt.Configuration;
 using GPM.Gantt.Services;
 using GPM.Gantt.Models;
+using GPM.Gantt.Models.Templates;
 using GPM.Gantt.Utilities;
 using GPM.Gantt.Interaction;
+using GPM.Gantt.Rendering;
+using GPM.Gantt.Models.Calendar;
 
 namespace GPM.Gantt
 {
@@ -126,6 +129,48 @@ namespace GPM.Gantt
         /// </summary>
         public static readonly DependencyProperty ThemeProperty = DependencyProperty.Register(
             nameof(Theme), typeof(GanttTheme), typeof(GanttContainer), new PropertyMetadata(null, OnThemePropertyChanged));
+
+        /// <summary>
+        /// Dependency property for showing dependency lines.
+        /// </summary>
+        public static readonly DependencyProperty ShowDependencyLinesProperty = DependencyProperty.Register(
+            nameof(ShowDependencyLines), typeof(bool), typeof(GanttContainer), new PropertyMetadata(true, OnLayoutPropertyChanged));
+
+        /// <summary>
+        /// Dependency property for the collection of task dependencies.
+        /// </summary>
+        public static readonly DependencyProperty DependenciesProperty = DependencyProperty.Register(
+            nameof(Dependencies), typeof(ObservableCollection<TaskDependency>), typeof(GanttContainer), new PropertyMetadata(null, OnDependenciesPropertyChanged));
+
+        /// <summary>
+        /// Dependency property for highlighting critical path.
+        /// </summary>
+        public static readonly DependencyProperty HighlightCriticalPathProperty = DependencyProperty.Register(
+            nameof(HighlightCriticalPath), typeof(bool), typeof(GanttContainer), new PropertyMetadata(true, OnLayoutPropertyChanged));
+
+        /// <summary>
+        /// Dependency property for the calendar service.
+        /// </summary>
+        public static readonly DependencyProperty CalendarServiceProperty = DependencyProperty.Register(
+            nameof(CalendarService), typeof(ICalendarService), typeof(GanttContainer), new PropertyMetadata(null));
+
+        /// <summary>
+        /// Dependency property for the dependency service.
+        /// </summary>
+        public static readonly DependencyProperty DependencyServiceProperty = DependencyProperty.Register(
+            nameof(DependencyService), typeof(IDependencyService), typeof(GanttContainer), new PropertyMetadata(null));
+
+        /// <summary>
+        /// Dependency property for the export service.
+        /// </summary>
+        public static readonly DependencyProperty ExportServiceProperty = DependencyProperty.Register(
+            nameof(ExportService), typeof(IExportService), typeof(GanttContainer), new PropertyMetadata(null));
+
+        /// <summary>
+        /// Dependency property for the template service.
+        /// </summary>
+        public static readonly DependencyProperty TemplateServiceProperty = DependencyProperty.Register(
+            nameof(TemplateService), typeof(ITemplateService), typeof(GanttContainer), new PropertyMetadata(null));
 
         /// <summary>
         /// Gets or sets the collection of tasks to be displayed in the Gantt chart.
@@ -286,6 +331,69 @@ namespace GPM.Gantt
         {
             get => (GanttTheme?)GetValue(ThemeProperty);
             set => SetValue(ThemeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether to show dependency lines between tasks.
+        /// </summary>
+        public bool ShowDependencyLines
+        {
+            get => (bool)GetValue(ShowDependencyLinesProperty);
+            set => SetValue(ShowDependencyLinesProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the collection of task dependencies.
+        /// </summary>
+        public ObservableCollection<TaskDependency>? Dependencies
+        {
+            get => (ObservableCollection<TaskDependency>?)GetValue(DependenciesProperty);
+            set => SetValue(DependenciesProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether to highlight the critical path.
+        /// </summary>
+        public bool HighlightCriticalPath
+        {
+            get => (bool)GetValue(HighlightCriticalPathProperty);
+            set => SetValue(HighlightCriticalPathProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the calendar service for working time calculations.
+        /// </summary>
+        public ICalendarService? CalendarService
+        {
+            get => (ICalendarService?)GetValue(CalendarServiceProperty);
+            set => SetValue(CalendarServiceProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the dependency service for managing task relationships.
+        /// </summary>
+        public IDependencyService? DependencyService
+        {
+            get => (IDependencyService?)GetValue(DependencyServiceProperty);
+            set => SetValue(DependencyServiceProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the export service for exporting charts.
+        /// </summary>
+        public IExportService? ExportService
+        {
+            get => (IExportService?)GetValue(ExportServiceProperty);
+            set => SetValue(ExportServiceProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the template service for managing project templates.
+        /// </summary>
+        public ITemplateService? TemplateService
+        {
+            get => (ITemplateService?)GetValue(TemplateServiceProperty);
+            set => SetValue(TemplateServiceProperty, value);
         }
 
         // Private fields for performance optimization
@@ -566,6 +674,25 @@ namespace GPM.Gantt
                 gc._isLayoutInvalidated = true; // mark invalid before rebuilding
                 gc.LogState("LayoutPropertyChanged -> set invalidated");
                 gc.BuildLayout();
+            }
+        }
+
+        private static void OnDependenciesPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is GanttContainer gc)
+            {
+                // Update dependency tracking
+                if (e.OldValue is ObservableCollection<TaskDependency> oldDependencies)
+                {
+                    oldDependencies.CollectionChanged -= gc.OnDependenciesCollectionChanged;
+                }
+                
+                if (e.NewValue is ObservableCollection<TaskDependency> newDependencies)
+                {
+                    newDependencies.CollectionChanged += gc.OnDependenciesCollectionChanged;
+                }
+                
+                gc.RefreshDependencyLines();
             }
         }
 
@@ -1358,6 +1485,161 @@ namespace GPM.Gantt
                 gridRow.SetResourceReference(Border.BorderThicknessProperty, "GanttGridLineThickness");
             }
             catch { /* Silently ignore if resources not available */ }
+        }
+        
+        #endregion
+        
+        #region Dependency Management
+        
+        private void OnDependenciesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            RefreshDependencyLines();
+        }
+        
+        /// <summary>
+        /// Refreshes the dependency lines display
+        /// </summary>
+        private void RefreshDependencyLines()
+        {
+            if (!ShowDependencyLines || Dependencies == null || !Dependencies.Any())
+                return;
+                
+            // Remove existing dependency lines
+            var dependencyElements = Children.OfType<FrameworkElement>()
+                .Where(e => e.Tag?.ToString() == "DependencyLine")
+                .ToList();
+                
+            foreach (var element in dependencyElements)
+            {
+                Children.Remove(element);
+            }
+            
+            // Create task position map
+            var taskPositions = CalculateTaskPositions();
+            
+            // Create dependency lines
+            var dependencyLines = CreateDependencyLines(taskPositions);
+            var renderer = new DependencyLineRenderer();
+            var lineElements = renderer.RenderDependencyLines(dependencyLines, taskPositions);
+            
+            // Add dependency line elements to the container
+            foreach (var element in lineElements)
+            {
+                if (element is FrameworkElement fe)
+                {
+                    fe.Tag = "DependencyLine";
+                    fe.IsHitTestVisible = false; // Allow click-through
+                }
+                Children.Add(element);
+            }
+        }
+        
+        /// <summary>
+        /// Calculates screen positions for all visible tasks
+        /// </summary>
+        private Dictionary<string, Rect> CalculateTaskPositions()
+        {
+            var positions = new Dictionary<string, Rect>();
+            
+            if (Tasks == null) return positions;
+            
+            var ticks = GetCachedTimelineTicks();
+            
+            foreach (var task in Tasks)
+            {
+                var rect = CalculateTaskScreenPosition(task, ticks);
+                if (rect.HasValue)
+                {
+                    positions[task.Id.ToString()] = rect.Value;
+                }
+            }
+            
+            return positions;
+        }
+        
+        /// <summary>
+        /// Calculates screen position for a single task
+        /// </summary>
+        private Rect? CalculateTaskScreenPosition(GanttTask task, List<DateTime> ticks)
+        {
+            try
+            {
+                var startIndex = TimelineCalculator.GetTimeIndex(task.Start, ticks);
+                var endIndex = TimelineCalculator.GetTimeIndex(task.End, ticks);
+                
+                if (startIndex < 0 || endIndex >= ticks.Count || task.RowIndex <= 0)
+                    return null;
+                
+                var columnWidth = ActualWidth / Math.Max(1, ColumnDefinitions.Count);
+                var rowHeight = ActualHeight / Math.Max(1, RowDefinitions.Count);
+                
+                var x = startIndex * columnWidth;
+                var y = task.RowIndex * rowHeight;
+                var width = Math.Max(1, (endIndex - startIndex + 1) * columnWidth);
+                var height = rowHeight * 0.8; // Leave some margin
+                
+                return new Rect(x, y, width, height);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        
+        /// <summary>
+        /// Creates dependency line objects for rendering
+        /// </summary>
+        private List<DependencyLine> CreateDependencyLines(Dictionary<string, Rect> taskPositions)
+        {
+            var dependencyLines = new List<DependencyLine>();
+            
+            if (Dependencies == null) return dependencyLines;
+            
+            foreach (var dependency in Dependencies.Where(d => d.IsActive))
+            {
+                var line = new DependencyLine
+                {
+                    Dependency = dependency,
+                    LineColor = dependency.IsCritical && HighlightCriticalPath ? 
+                        Brushes.Red : Brushes.DarkBlue,
+                    LineThickness = dependency.IsCritical && HighlightCriticalPath ? 2.0 : 1.0,
+                    IsHighlighted = dependency.IsCritical && HighlightCriticalPath,
+                    ShowArrow = true,
+                    ShowLagLabel = dependency.Lag != TimeSpan.Zero
+                };
+                
+                dependencyLines.Add(line);
+            }
+            
+            return dependencyLines;
+        }
+        
+        /// <summary>
+        /// Exports the Gantt chart using the configured export service
+        /// </summary>
+        public async System.Threading.Tasks.Task<bool> ExportAsync(string filePath, ExportOptions options)
+        {
+            if (ExportService == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Export service not configured");
+                return false;
+            }
+            
+            return await ExportService.ExportGanttChartAsync(this, filePath, options);
+        }
+        
+        /// <summary>
+        /// Applies a project template using the configured template service
+        /// </summary>
+        public async System.Threading.Tasks.Task<List<GanttTask>> ApplyTemplateAsync(string templateId, TemplateApplicationOptions options)
+        {
+            if (TemplateService == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Template service not configured");
+                return new List<GanttTask>();
+            }
+            
+            return await TemplateService.ApplyTemplateAsync(templateId, options);
         }
         
         #endregion

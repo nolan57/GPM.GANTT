@@ -231,6 +231,35 @@ namespace GPM.Gantt.Utilities
             return dateTime.Date == DateTime.Today;
         }
         
+        /// <summary>
+        /// Gets the index of a DateTime within a list of timeline ticks.
+        /// </summary>
+        /// <param name="dateTime">The DateTime to find the index for.</param>
+        /// <param name="ticks">The list of timeline ticks.</param>
+        /// <returns>The index of the tick that contains or precedes the given DateTime, or -1 if not found.</returns>
+        public static int GetTimeIndex(DateTime dateTime, List<DateTime> ticks)
+        {
+            if (ticks == null || ticks.Count == 0)
+                return -1;
+            
+            // Find the tick that is closest to or before the given dateTime
+            for (int i = 0; i < ticks.Count; i++)
+            {
+                if (i == ticks.Count - 1) // Last tick
+                    return i;
+                    
+                if (dateTime >= ticks[i] && dateTime < ticks[i + 1])
+                    return i;
+            }
+            
+            // If dateTime is before all ticks, return 0
+            if (dateTime < ticks[0])
+                return 0;
+                
+            // If dateTime is after all ticks, return last index
+            return ticks.Count - 1;
+        }
+        
         #region Private Helper Methods
         
         private static void GenerateHourlyTicks(DateTime start, DateTime end, List<DateTime> result)
