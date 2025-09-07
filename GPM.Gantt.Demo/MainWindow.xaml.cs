@@ -13,6 +13,7 @@ using GPM.Gantt.Models;
 using GPM.Gantt.Models.Calendar;
 using GPM.Gantt.Models.Templates;
 using GPM.Gantt.Services;
+using GPM.Gantt.Demo;
 using WpfSelectionChangedEventArgs = System.Windows.Controls.SelectionChangedEventArgs;
 using TaskStatus = GPM.Gantt.Models.TaskStatus;
 
@@ -258,8 +259,9 @@ namespace GPM.Gantt.Demo
 
         private void RunInteractiveDemo(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement interactive demo
-            MessageBox.Show("Interactive Features Demo - Coming Soon!", "Demo", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Open the advanced features demo window
+            var advancedDemo = new AdvancedFeaturesDemo();
+            advancedDemo.Show();
         }
 
         #region Phase 1 Event Handlers

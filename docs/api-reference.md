@@ -1,6 +1,6 @@
-# API Reference - GPM.Gantt
+# API Reference - GPM.Gantt v2.1.0
 
-This document provides comprehensive API documentation for the GPM.Gantt library.
+This document provides comprehensive API documentation for the GPM.Gantt library, including the new advanced features introduced in version 2.1.0.
 
 ## Core Components
 
@@ -469,6 +469,168 @@ The library uses standard .NET exception handling patterns:
 - `ArgumentException` for invalid arguments
 - `InvalidOperationException` for invalid state operations
 - `ValidationException` for validation failures (future enhancement)
+
+## Advanced Features (v2.1.0)
+
+### Plugin-Based Annotation System
+
+Extensible annotation framework allowing custom markup and identification features.
+
+#### Core Interfaces
+
+```csharp
+public interface IAnnotationPlugin
+{
+    string Name { get; }
+    AnnotationType Type { get; }
+    UIElement CreateElement(IAnnotationConfig config);
+    bool ValidateConfig(IAnnotationConfig config);
+}
+
+public interface IAnnotationConfig
+{
+    string Id { get; set; }
+    string Name { get; set; }
+    AnnotationType Type { get; set; }
+    double X { get; set; }
+    double Y { get; set; }
+    double Width { get; set; }
+    double Height { get; set; }
+}
+```
+
+#### Built-in Plugins
+
+**Text Annotations**
+```csharp
+var textConfig = new TextAnnotationConfig
+{
+    Text = "Critical Phase",
+    FontSize = 14,
+    Color = "#FF0000",
+    X = 100, Y = 50
+};
+```
+
+**Shape Annotations**
+```csharp
+var shapeConfig = new ShapeAnnotationConfig
+{
+    ShapeType = "Rectangle",
+    FillColor = "#FF4CAF50",
+    StrokeColor = "#FF2196F3"
+};
+```
+
+**Line Annotations**
+```csharp
+var lineConfig = new LineAnnotationConfig
+{
+    X2 = 200, Y2 = 25,
+    StrokeColor = "#FFFF5722",
+    EndCapType = "Arrow"
+};
+```
+
+### Multi-Level Time Scale
+
+Simultaneous display of multiple time granularities for enhanced timeline navigation.
+
+#### Configuration Models
+
+```csharp
+public class MultiLevelTimeScaleConfiguration
+{
+    public List<TimeLevelConfiguration> Levels { get; set; }
+    public bool EnableSmartVisibility { get; set; }
+    public TimeSpan VisibilityThreshold { get; set; }
+}
+
+public class TimeLevelConfiguration
+{
+    public ExtendedTimeUnit Unit { get; set; }
+    public bool IsVisible { get; set; }
+    public double Height { get; set; }
+    public string DateFormat { get; set; }
+}
+
+public enum ExtendedTimeUnit
+{
+    Minute, Hour, Day, Week, Month, Quarter, Year
+}
+```
+
+#### Usage Example
+
+```csharp
+var config = new MultiLevelTimeScaleConfiguration
+{
+    Levels = new List<TimeLevelConfiguration>
+    {
+        new() { Unit = ExtendedTimeUnit.Year, Height = 30, DateFormat = "yyyy" },
+        new() { Unit = ExtendedTimeUnit.Month, Height = 25, DateFormat = "MMM" },
+        new() { Unit = ExtendedTimeUnit.Week, Height = 20, DateFormat = "ww" }
+    },
+    EnableSmartVisibility = true
+};
+
+ganttContainer.MultiLevelTimeScale = config;
+```
+
+### Expandable Time Axis Segments
+
+Dynamic expansion of specific time periods for detailed exploration.
+
+#### Expansion Model
+
+```csharp
+public class TimeSegmentExpansion
+{
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public ExtendedTimeUnit OriginalUnit { get; set; }
+    public ExtendedTimeUnit ExpandedUnit { get; set; }
+    public bool IsExpanded { get; set; }
+    public string DisplayName { get; set; }
+}
+```
+
+#### Interactive Controls
+
+```csharp
+public class MultiLevelTimeScaleTick : UserControl
+{
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public ExtendedTimeUnit Unit { get; set; }
+    public bool IsExpandable { get; set; }
+    
+    public event EventHandler<TimeSegmentExpansionRequestedEventArgs> ExpansionRequested;
+}
+```
+
+#### Expansion Example
+
+```csharp
+// Expand specific week to daily view
+var expansion = new TimeSegmentExpansion
+{
+    StartTime = new DateTime(2024, 3, 18),
+    EndTime = new DateTime(2024, 3, 24),
+    OriginalUnit = ExtendedTimeUnit.Week,
+    ExpandedUnit = ExtendedTimeUnit.Day,
+    IsExpanded = true
+};
+
+ganttContainer.TimeSegmentExpansions.Add(expansion);
+```
+
+### Performance Optimizations
+
+- **Element Pooling**: Reusable UI elements for annotations
+- **Smart Visibility**: Automatic level management based on viewport
+- **Efficient Rendering**: Optimized multi-level time scale rendering
+- **Memory Management**: Automatic cleanup of expanded segments
 
 ## Threading Considerations
 

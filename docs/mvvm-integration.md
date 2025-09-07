@@ -1,6 +1,6 @@
-# MVVM Integration Guide - GPM.Gantt
+# MVVM Integration Guide - GPM.Gantt v2.1.0
 
-This guide demonstrates how to effectively integrate GPM.Gantt with the Model-View-ViewModel (MVVM) pattern in WPF applications.
+This guide demonstrates how to effectively integrate GPM.Gantt with the Model-View-ViewModel (MVVM) pattern in WPF applications, including the advanced features introduced in version 2.1.0.
 
 ## MVVM Overview
 
@@ -601,3 +601,176 @@ public class MainViewModel : ViewModelBase
 2. **Test ViewModels independently** - Don't depend on UI for ViewModel tests
 3. **Test commands** - Verify command execution and CanExecute logic
 4. **Test data binding** - Verify property change notifications
+
+## Advanced MVVM Features (v2.1.0)
+
+### Plugin System Integration
+
+ViewModels can integrate with the annotation plugin system:
+
+```csharp
+public class AdvancedProjectViewModel : ViewModelBase
+{
+    private readonly IPluginService _pluginService;
+    private readonly ObservableCollection<AnnotationViewModel> _annotations;
+    
+    public AdvancedProjectViewModel(IPluginService pluginService)
+    {
+        _pluginService = pluginService;
+        _annotations = new ObservableCollection<AnnotationViewModel>();
+        
+        InitializePluginSystem();
+    }
+    
+    public ReadOnlyObservableCollection<AnnotationViewModel> Annotations { get; }
+    
+    private void InitializePluginSystem()
+    {
+        // Register built-in plugins
+        _pluginService.RegisterPlugin(new TextAnnotationPlugin());
+        _pluginService.RegisterPlugin(new ShapeAnnotationPlugin());
+        _pluginService.RegisterPlugin(new LineAnnotationPlugin());
+        
+        // Create annotation ViewModels
+        CreateAnnotationViewModels();
+    }
+    
+    private void CreateAnnotationViewModels()
+    {
+        var textPlugin = _pluginService.GetPlugin(AnnotationType.Text);
+        var textConfig = textPlugin.CreateDefaultConfig() as TextAnnotationConfig;
+        textConfig.Text = "Critical Milestone";
+        
+        var annotationVM = new AnnotationViewModel(textConfig, textPlugin);
+        _annotations.Add(annotationVM);
+    }
+    
+    public ICommand AddTextAnnotationCommand => new RelayCommand(AddTextAnnotation);
+    
+    private void AddTextAnnotation()
+    {
+        var textPlugin = _pluginService.GetPlugin(AnnotationType.Text);
+        var config = textPlugin.CreateDefaultConfig();
+        var annotationVM = new AnnotationViewModel(config, textPlugin);
+        _annotations.Add(annotationVM);
+    }
+}
+```
+
+### Multi-Level Time Scale ViewModel
+
+Manage complex time scale configurations through ViewModels:
+
+```csharp
+public class TimeScaleViewModel : ViewModelBase
+{
+    private MultiLevelTimeScaleConfiguration _configuration;
+    
+    public TimeScaleViewModel()
+    {
+        InitializeTimeScaleConfiguration();
+    }
+    
+    public MultiLevelTimeScaleConfiguration Configuration
+    {
+        get => _configuration;
+        set => SetProperty(ref _configuration, value);
+    }
+    
+    private void InitializeTimeScaleConfiguration()
+    {
+        Configuration = new MultiLevelTimeScaleConfiguration
+        {
+            Levels = new List<TimeLevelConfiguration>
+            {
+                new TimeLevelConfiguration
+                {
+                    Unit = ExtendedTimeUnit.Year,
+                    IsVisible = true,
+                    Height = 35,
+                    DateFormat = "yyyy"
+                },
+                new TimeLevelConfiguration
+                {
+                    Unit = ExtendedTimeUnit.Month,
+                    IsVisible = true,
+                    Height = 25,
+                    DateFormat = "MMM"
+                }
+            },
+            EnableSmartVisibility = true
+        };
+    }
+    
+    public ICommand AddTimeLevelCommand => new RelayCommand(AddTimeLevel);
+    public ICommand RemoveTimeLevelCommand => new RelayCommand<TimeLevelConfiguration>(RemoveTimeLevel);
+    
+    private void AddTimeLevel()
+    {
+        Configuration.Levels.Add(new TimeLevelConfiguration
+        {
+            Unit = ExtendedTimeUnit.Week,
+            IsVisible = true,
+            Height = 20,
+            DateFormat = "ww"
+        });
+        
+        OnPropertyChanged(nameof(Configuration));
+    }
+    
+    private void RemoveTimeLevel(TimeLevelConfiguration level)
+    {
+        Configuration.Levels.Remove(level);
+        OnPropertyChanged(nameof(Configuration));
+    }
+}
+```
+
+### Expandable Time Segments ViewModel
+
+Manage interactive time segment expansions:
+
+```csharp
+public class TimeSegmentViewModel : ViewModelBase
+{
+    private readonly ObservableCollection<TimeSegmentExpansion> _expansions;
+    
+    public TimeSegmentViewModel()
+    {
+        _expansions = new ObservableCollection<TimeSegmentExpansion>();
+    }
+    
+    public ReadOnlyObservableCollection<TimeSegmentExpansion> Expansions { get; }
+    
+    public ICommand AddExpansionCommand => new RelayCommand<DateTime>(AddExpansion);
+    public ICommand ToggleExpansionCommand => new RelayCommand<TimeSegmentExpansion>(ToggleExpansion);
+    
+    private void AddExpansion(DateTime date)
+    {
+        var expansion = new TimeSegmentExpansion
+        {
+            StartTime = date,
+            EndTime = date.AddDays(7),
+            OriginalUnit = ExtendedTimeUnit.Week,
+            ExpandedUnit = ExtendedTimeUnit.Day,
+            IsExpanded = false,
+            DisplayName = $"Week of {date:MMM dd}"
+        };
+        
+        _expansions.Add(expansion);
+    }
+    
+    private void ToggleExpansion(TimeSegmentExpansion expansion)
+    {
+        expansion.IsExpanded = !expansion.IsExpanded;
+        OnPropertyChanged(nameof(Expansions));
+        
+        // Notify parent ViewModel to refresh time scale
+        OnExpansionChanged?.Invoke(this, EventArgs.Empty);
+    }
+    
+    public event EventHandler OnExpansionChanged;
+}
+```
+
+These advanced MVVM patterns enable sophisticated integration scenarios with the new GPM.Gantt v2.1.0 features.

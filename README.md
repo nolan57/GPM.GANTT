@@ -24,6 +24,9 @@ A modern, enterprise-grade WPF Gantt chart component library designed for high-p
 - **Async Operations**: Non-blocking async service layer for data operations
 
 ### Advanced Features
+- **Plugin-Based Annotation System**: Extensible annotation framework with text, shape, and line plugins
+- **Expandable Time Axis Segments**: Dynamically expand specific time periods (e.g., weeks to days) while maintaining other granularities
+- **Multi-Level Time Scale Display**: Simultaneous visualization of year, quarter, month, week, day, and hour levels
 - **Interactive Controls**: Full drag-drop, resize, and selection capabilities
 - **Validation System**: Comprehensive task and data validation with detailed error reporting
 - **Error Handling**: Robust error handling with fallback mechanisms and debugging support
@@ -138,7 +141,7 @@ public class ProjectViewModel : ViewModelBase
 
 ### Core Documentation
 - [**Custom Shapes Guide**](CUSTOM_SHAPES_GUIDE.md) - Complete guide to custom task bar shapes
-- [**Theme Management**](THEME_MANAGEMENT_IMPLEMENTATION.md) - Comprehensive theming system documentation
+- [**Theme Management**](THEME_MANAGEMENT_GUIDE.md) - Comprehensive theming system documentation
 - [**Date/Time Formatting**](Date_Time_Format_Implementation.md) - Custom date and time format implementation
 
 ### API & Development
@@ -281,7 +284,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## 🗺️ Roadmap
 
-### Current Version (2.0.0)
+### Current Version (2.1.0)
 - ✅ Advanced Gantt chart with custom shapes
 - ✅ Comprehensive theme management system
 - ✅ Performance optimization and memory management
@@ -290,6 +293,9 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - ✅ Interactive controls with drag-drop and resize
 - ✅ Comprehensive validation and error handling
 - ✅ Performance monitoring and diagnostics
+- ✅ Plugin-based annotation system with text, shape, and line annotations
+- ✅ Expandable time axis segments for detailed time period exploration
+- ✅ Multi-level time scale display with intelligent visibility management
 
 ### Recent Improvements (v2.0.1)
 - ✅ Fixed BorderThickness theme resource conversion bug
@@ -298,12 +304,11 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - ✅ Performance diagnostics with real-time recommendations
 - ✅ Element pooling for better rendering performance
 
-### Upcoming Features (v2.1.0)
+### Upcoming Features (v3.0.0)
 - 🚧 Task dependencies with automatic layout
 - 🚧 Export capabilities (PDF, PNG, Excel, SVG)
 - 🚧 Advanced timeline features (baselines, critical path)
 - 🚧 Collaborative editing support
-- 🚧 Plugin architecture for custom extensions
 - 🚧 Mobile/touch support optimization
 
 ## 📄 License

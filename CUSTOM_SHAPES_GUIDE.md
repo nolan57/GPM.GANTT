@@ -411,4 +411,125 @@ foreach (var task in existingTasks.Where(t => t.Priority == TaskPriority.Critica
 - **Monitor memory usage** during shape-intensive operations
 - **Clean up resources** properly in dispose patterns
 
-This implementation provides a flexible, extensible, and performance-optimized solution for custom task bar shapes while maintaining full backward compatibility and enterprise-grade reliability.
+## Integration with Advanced Features (v2.1.0)
+
+### Annotations with Custom Shapes
+
+Combine custom shapes with the annotation system for enhanced visualization:
+
+```csharp
+// Create a task with custom shape and annotations
+var customTask = new GanttTask
+{
+    Title = "Custom Shape Task",
+    Start = DateTime.Today,
+    End = DateTime.Today.AddDays(5),
+    RowIndex = 1,
+    Shape = TaskBarShape.Custom,
+    ShapeParameters = new ShapeRenderingParameters
+    {
+        CustomProperties = 
+        {
+            ["StarPoints"] = 5,
+            ["InnerRadius"] = 0.5
+        }
+    }
+};
+
+// Add shape annotation that complements the task shape
+var annotationConfig = new ShapeAnnotationConfig
+{
+    ShapeType = "Circle",
+    FillColor = "#FFFFD700", // Gold
+    StrokeColor = "#FFFF8C00", // Dark orange
+    X = 100, Y = 50,
+    Width = 20, Height = 20
+};
+```
+
+### Multi-Level Time Scale with Custom Shapes
+
+Display custom shapes effectively across different time scale levels:
+
+```csharp
+// Configure multi-level time scale with custom shape optimization
+var multiLevelConfig = new MultiLevelTimeScaleConfiguration
+{
+    Levels = new List<TimeLevelConfiguration>
+    {
+        new TimeLevelConfiguration
+        {
+            Unit = ExtendedTimeUnit.Month,
+            Height = 30,
+            DateFormat = "MMM"
+        },
+        new TimeLevelConfiguration
+        {
+            Unit = ExtendedTimeUnit.Week,
+            Height = 25,
+            DateFormat = "ww"
+        }
+    },
+    EnableSmartVisibility = true
+};
+
+ganttContainer.MultiLevelTimeScale = multiLevelConfig;
+
+// Adjust shape rendering based on time scale level
+var customTask = new GanttTask
+{
+    Title = "Adaptive Custom Shape",
+    Start = DateTime.Today,
+    End = DateTime.Today.AddDays(10),
+    RowIndex = 1,
+    Shape = TaskBarShape.Custom,
+    ShapeParameters = new ShapeRenderingParameters
+    {
+        // Simplified rendering for higher-level views
+        CustomProperties = 
+        {
+            ["SimplifiedRendering"] = true,
+            ["DetailLevel"] = "Auto"
+        }
+    }
+};
+```
+
+### Expandable Time Segments with Custom Shapes
+
+Ensure custom shapes render correctly when time segments are expanded:
+
+```csharp
+// Create expandable segment with custom shapes
+var expansion = new TimeSegmentExpansion
+{
+    StartTime = DateTime.Today.AddDays(14),
+    EndTime = DateTime.Today.AddDays(21),
+    OriginalUnit = ExtendedTimeUnit.Week,
+    ExpandedUnit = ExtendedTimeUnit.Day,
+    DisplayName = "Detailed Custom Shape View"
+};
+
+ganttContainer.TimeSegmentExpansions.Add(expansion);
+
+// Configure custom shape for detailed view
+var detailedTask = new GanttTask
+{
+    Title = "High-Detail Custom Shape",
+    Start = DateTime.Today.AddDays(15),
+    End = DateTime.Today.AddDays(16),
+    RowIndex = 1,
+    Shape = TaskBarShape.Custom,
+    ShapeParameters = new ShapeRenderingParameters
+    {
+        // More detailed rendering for expanded view
+        CustomProperties = 
+        {
+            ["DetailLevel"] = "High",
+            ["RenderQuality"] = "Ultra"
+        }
+    }
+};
+```
+
+These integration patterns enable sophisticated visualization scenarios combining custom shapes with the advanced GPM.Gantt v2.1.0 features.

@@ -13,6 +13,10 @@ This document provides practical examples and common use cases for implementing 
 7. [Custom Task Types](#custom-task-types)
 8. [Real-time Updates](#real-time-updates)
 9. [Integration Examples](#integration-examples)
+10. [Advanced Features (v2.1.0)](#advanced-features-v210)
+    - [Plugin-Based Annotation System](#plugin-based-annotation-system)
+    - [Multi-Level Time Scale Configuration](#multi-level-time-scale-configuration)
+    - [Expandable Time Axis Segments](#expandable-time-axis-segments)
 
 ## Basic Project Management
 
@@ -859,4 +863,512 @@ Advanced styling for different task types and priorities.
 </Window.Resources>
 ```
 
-These examples demonstrate the flexibility and power of GPM.Gantt across various domains and use cases. Each example can be adapted and extended based on specific requirements and business needs.
+## Advanced Features (v2.1.0)
+
+### Plugin-Based Annotation System
+
+Advanced project timeline with rich annotations for critical milestones and risk indicators.
+
+```csharp
+public class AdvancedProjectViewModel : ViewModelBase
+{
+    private readonly IPluginService _pluginService;
+    private readonly GanttChartViewModel _ganttChart;
+    
+    public AdvancedProjectViewModel(IPluginService pluginService)
+    {
+        _pluginService = pluginService;
+        _ganttChart = new GanttChartViewModel();
+        
+        RegisterAnnotationPlugins();
+        CreateProjectWithAnnotations();
+    }
+    
+    private void RegisterAnnotationPlugins()
+    {
+        // Register built-in annotation plugins
+        _pluginService.RegisterPlugin(new TextAnnotationPlugin());
+        _pluginService.RegisterPlugin(new ShapeAnnotationPlugin());
+        _pluginService.RegisterPlugin(new LineAnnotationPlugin());
+    }
+    
+    private void CreateProjectWithAnnotations()
+    {
+        // Create standard project tasks
+        var tasks = CreateStandardTasks();
+        
+        // Add text annotations for critical milestones
+        var textPlugin = _pluginService.GetPlugin(AnnotationType.Text);
+        var milestoneAnnotation = new TextAnnotationConfig
+        {
+            Text = "CRITICAL MILESTONE: First Release",
+            FontFamily = "Arial",
+            FontSize = 14,
+            FontWeight = "Bold",
+            Color = "#FFFF0000",
+            BackgroundColor = "#FFFFFF00",
+            X = 200,
+            Y = 100,
+            Width = 250,
+            Height = 30
+        };
+        var milestoneElement = textPlugin.CreateElement(milestoneAnnotation);
+        
+        // Add shape annotations for risk indicators
+        var shapePlugin = _pluginService.GetPlugin(AnnotationType.Shape);
+        var riskIndicator = new ShapeAnnotationConfig
+        {
+            ShapeType = "Triangle",
+            FillColor = "#FFFF6B6B",
+            StrokeColor = "#FFDC3545",
+            StrokeThickness = 2,
+            X = 150,
+            Y = 75,
+            Width = 30,
+            Height = 30,
+            Opacity = 0.8
+        };
+        var riskElement = shapePlugin.CreateElement(riskIndicator);
+        
+        // Add line annotations for dependency emphasis
+        var linePlugin = _pluginService.GetPlugin(AnnotationType.Line);
+        var dependencyLine = new LineAnnotationConfig
+        {
+            X = 100,
+            Y = 50,
+            X2 = 300,
+            Y2 = 50,
+            StrokeColor = "#FF007BFF",
+            StrokeThickness = 3,
+            EndCapType = "Arrow",
+            Opacity = 0.9
+        };
+        var dependencyElement = linePlugin.CreateElement(dependencyLine);
+    }
+}
+```
+
+### Multi-Level Time Scale Configuration
+
+Complex project view with multiple time granularities for enhanced timeline navigation.
+
+```csharp
+public class MultiTimeScaleViewModel : ViewModelBase
+{
+    private readonly GanttChartViewModel _ganttChart;
+    private MultiLevelTimeScaleConfiguration _timeScaleConfig;
+    
+    public MultiTimeScaleViewModel()
+    {
+        _ganttChart = new GanttChartViewModel();
+        ConfigureMultiLevelTimeScale();
+        CreateLongTermProject();
+    }
+    
+    private void ConfigureMultiLevelTimeScale()
+    {
+        _timeScaleConfig = new MultiLevelTimeScaleConfiguration
+        {
+            Levels = new List<TimeLevelConfiguration>
+            {
+                // Year level - for long-term planning
+                new TimeLevelConfiguration
+                {
+                    Unit = ExtendedTimeUnit.Year,
+                    IsVisible = true,
+                    Height = 35,
+                    BackgroundColor = "#FF2C3E50",
+                    TextColor = "#FFFFFFFF",
+                    FontFamily = "Segoe UI",
+                    FontSize = 16,
+                    DateFormat = "yyyy",
+                    TextAlignment = HorizontalAlignment.Center,
+                    ShowBorders = true,
+                    BorderColor = "#FF34495E",
+                    BorderThickness = 1,
+                    ZIndex = 4
+                },
+                // Quarter level - for quarterly planning
+                new TimeLevelConfiguration
+                {
+                    Unit = ExtendedTimeUnit.Quarter,
+                    IsVisible = true,
+                    Height = 30,
+                    BackgroundColor = "#FF3498DB",
+                    TextColor = "#FFFFFFFF",
+                    FontFamily = "Segoe UI",
+                    FontSize = 14,
+                    DateFormat = "Q{0}",
+                    TextAlignment = HorizontalAlignment.Center,
+                    ShowBorders = true,
+                    BorderColor = "#FF2980B9",
+                    BorderThickness = 1,
+                    ZIndex = 3
+                },
+                // Month level - for monthly planning
+                new TimeLevelConfiguration
+                {
+                    Unit = ExtendedTimeUnit.Month,
+                    IsVisible = true,
+                    Height = 25,
+                    BackgroundColor = "#FF1ABC9C",
+                    TextColor = "#FFFFFFFF",
+                    FontFamily = "Segoe UI",
+                    FontSize = 12,
+                    DateFormat = "MMM",
+                    TextAlignment = HorizontalAlignment.Center,
+                    ShowBorders = true,
+                    BorderColor = "#FF16A085",
+                    BorderThickness = 1,
+                    ZIndex = 2
+                },
+                // Week level - for weekly planning
+                new TimeLevelConfiguration
+                {
+                    Unit = ExtendedTimeUnit.Week,
+                    IsVisible = true,
+                    Height = 20,
+                    BackgroundColor = "#FF95A5A6",
+                    TextColor = "#FF2C3E50",
+                    FontFamily = "Segoe UI",
+                    FontSize = 10,
+                    DateFormat = "ww",
+                    TextAlignment = HorizontalAlignment.Center,
+                    ShowBorders = true,
+                    BorderColor = "#FF7F8C8D",
+                    BorderThickness = 1,
+                    ZIndex = 1
+                }
+            },
+            TotalHeight = 110,
+            EnableSmartVisibility = true,
+            VisibilityThreshold = TimeSpan.FromDays(365),
+            EnableAutoFit = true,
+            Theme = "Corporate"
+        };
+        
+        _ganttChart.MultiLevelTimeScale = _timeScaleConfig;
+    }
+    
+    private void CreateLongTermProject()
+    {
+        var projectStart = DateTime.Today;
+        var tasks = new[]
+        {
+            new GanttTask
+            {
+                Title = "Phase 1: Foundation",
+                Start = projectStart,
+                End = projectStart.AddMonths(3),
+                RowIndex = 1,
+                Priority = TaskPriority.Critical
+            },
+            new GanttTask
+            {
+                Title = "Phase 2: Development",
+                Start = projectStart.AddMonths(3),
+                End = projectStart.AddMonths(9),
+                RowIndex = 2,
+                Priority = TaskPriority.High
+            },
+            new GanttTask
+            {
+                Title = "Phase 3: Integration",
+                Start = projectStart.AddMonths(9),
+                End = projectStart.AddMonths(12),
+                RowIndex = 3,
+                Priority = TaskPriority.High
+            },
+            new GanttTask
+            {
+                Title = "Phase 4: Launch",
+                Start = projectStart.AddMonths(12),
+                End = projectStart.AddMonths(15),
+                RowIndex = 4,
+                Priority = TaskPriority.Critical
+            }
+        };
+        
+        foreach (var task in tasks)
+        {
+            _ganttChart.Tasks.Add(new GanttTaskViewModel(task));
+        }
+    }
+}
+```
+
+### Expandable Time Axis Segments
+
+Interactive time exploration with dynamic segment expansion for detailed analysis.
+
+```csharp
+public class ExpandableTimeAxisViewModel : ViewModelBase
+{
+    private readonly GanttChartViewModel _ganttChart;
+    private readonly List<TimeSegmentExpansion> _expansions;
+    
+    public ExpandableTimeAxisViewModel()
+    {
+        _ganttChart = new GanttChartViewModel();
+        _expansions = new List<TimeSegmentExpansion>();
+        
+        SetupExpandableTimeAxis();
+        CreateDetailedProject();
+    }
+    
+    private void SetupExpandableTimeAxis()
+    {
+        // Configure primary time scale to show weeks
+        _ganttChart.TimeUnit = TimeUnit.Week;
+        _ganttChart.StartTime = DateTime.Today;
+        _ganttChart.EndTime = DateTime.Today.AddDays(84); // 12 weeks
+        
+        // Create expandable segments for critical weeks
+        var criticalWeekExpansion = new TimeSegmentExpansion
+        {
+            SegmentId = "critical-week-1",
+            StartTime = DateTime.Today.AddDays(21), // Week 4
+            EndTime = DateTime.Today.AddDays(28),
+            OriginalUnit = ExtendedTimeUnit.Week,
+            ExpandedUnit = ExtendedTimeUnit.Day,
+            IsExpanded = false,
+            IsCollapsible = true,
+            DisplayName = "Critical Development Week"
+        };
+        
+        var testingWeekExpansion = new TimeSegmentExpansion
+        {
+            SegmentId = "testing-week",
+            StartTime = DateTime.Today.AddDays(56), // Week 9
+            EndTime = DateTime.Today.AddDays(63),
+            OriginalUnit = ExtendedTimeUnit.Week,
+            ExpandedUnit = ExtendedTimeUnit.Day,
+            IsExpanded = false,
+            IsCollapsible = true,
+            DisplayName = "Testing & QA Week"
+        };
+        
+        _expansions.Add(criticalWeekExpansion);
+        _expansions.Add(testingWeekExpansion);
+        
+        _ganttChart.TimeSegmentExpansions = new ObservableCollection<TimeSegmentExpansion>(_expansions);
+    }
+    
+    private void CreateDetailedProject()
+    {
+        var tasks = new[]
+        {
+            new GanttTask
+            {
+                Title = "Planning Phase",
+                Start = DateTime.Today,
+                End = DateTime.Today.AddDays(14),
+                RowIndex = 1,
+                Priority = TaskPriority.High
+            },
+            new GanttTask
+            {
+                Title = "Development Sprint 1",
+                Start = DateTime.Today.AddDays(14),
+                End = DateTime.Today.AddDays(28),
+                RowIndex = 2,
+                Priority = TaskPriority.Critical // This falls in expandable segment
+            },
+            new GanttTask
+            {
+                Title = "Development Sprint 2",
+                Start = DateTime.Today.AddDays(28),
+                End = DateTime.Today.AddDays(42),
+                RowIndex = 3,
+                Priority = TaskPriority.High
+            },
+            new GanttTask
+            {
+                Title = "Integration Testing",
+                Start = DateTime.Today.AddDays(56),
+                End = DateTime.Today.AddDays(63),
+                RowIndex = 4,
+                Priority = TaskPriority.Critical // This falls in expandable segment
+            },
+            new GanttTask
+            {
+                Title = "Final Release",
+                Start = DateTime.Today.AddDays(70),
+                End = DateTime.Today.AddDays(84),
+                RowIndex = 5,
+                Priority = TaskPriority.Critical
+            }
+        };
+        
+        foreach (var task in tasks)
+        {
+            _ganttChart.Tasks.Add(new GanttTaskViewModel(task));
+        }
+    }
+    
+    public ICommand ExpandSegmentCommand => new RelayCommand<string>(ExpandSegment);
+    public ICommand CollapseSegmentCommand => new RelayCommand<string>(CollapseSegment);
+    
+    private void ExpandSegment(string segmentId)
+    {
+        var expansion = _expansions.FirstOrDefault(e => e.SegmentId == segmentId);
+        if (expansion != null && !expansion.IsExpanded)
+        {
+            expansion.IsExpanded = true;
+            // Trigger UI update to show daily granularity for this week
+            RefreshTimeScale();
+        }
+    }
+    
+    private void CollapseSegment(string segmentId)
+    {
+        var expansion = _expansions.FirstOrDefault(e => e.SegmentId == segmentId);
+        if (expansion != null && expansion.IsExpanded && expansion.IsCollapsible)
+        {
+            expansion.IsExpanded = false;
+            // Trigger UI update to return to weekly granularity
+            RefreshTimeScale();
+        }
+    }
+    
+    private void RefreshTimeScale()
+    {
+        // Implementation would trigger re-rendering of time scale
+        // with mixed granularities based on expansion states
+        OnPropertyChanged(nameof(TimeSegmentExpansions));
+    }
+}
+```
+
+### XAML for Advanced Features
+
+```xml
+<Grid>
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    
+    <!-- Advanced Controls -->
+    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
+        <Button Content="Add Text Annotation" Command="{Binding AddTextAnnotationCommand}"/>
+        <Button Content="Add Shape Annotation" Command="{Binding AddShapeAnnotationCommand}"/>
+        <Button Content="Toggle Multi-Level Scale" Command="{Binding ToggleMultiLevelCommand}"/>
+        <ComboBox ItemsSource="{Binding AvailableTimeUnits}" 
+                  SelectedItem="{Binding SelectedTimeUnit}"/>
+    </StackPanel>
+    
+    <!-- Expandable Time Controls -->
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10">
+        <TextBlock Text="Expandable Segments:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+        <ItemsControl ItemsSource="{Binding TimeSegmentExpansions}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Margin="5,0">
+                        <Button Content="{Binding DisplayName}"
+                                Command="{Binding DataContext.ExpandSegmentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding SegmentId}"
+                                IsEnabled="{Binding IsExpanded, Converter={StaticResource InverseBooleanConverter}}"/>
+                        <Button Content="Collapse"
+                                Command="{Binding DataContext.CollapseSegmentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding SegmentId}"
+                                IsEnabled="{Binding IsExpanded}"
+                                Visibility="{Binding IsCollapsible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+    
+    <!-- Enhanced Gantt Chart with Advanced Features -->
+    <gantt:GanttContainer Grid.Row="2"
+                         StartTime="{Binding GanttChart.StartTime}"
+                         EndTime="{Binding GanttChart.EndTime}"
+                         TimeUnit="{Binding GanttChart.TimeUnit}"
+                         Tasks="{Binding GanttChart.TaskModels}"
+                         MultiLevelTimeScale="{Binding GanttChart.MultiLevelTimeScale}"
+                         TimeSegmentExpansions="{Binding GanttChart.TimeSegmentExpansions}"
+                         AnnotationPlugins="{Binding RegisteredPlugins}"
+                         TaskCount="10"
+                         ShowGridCells="True"/>
+    
+    <!-- Advanced Status Bar -->
+    <StatusBar Grid.Row="3">
+        <StatusBarItem Content="{Binding GanttChart.Tasks.Count, StringFormat='Tasks: {0}'}"/>
+        <StatusBarItem Content="{Binding GanttChart.TimeUnit, StringFormat='Primary Scale: {0}'}"/>
+        <StatusBarItem Content="{Binding ActiveExpansions.Count, StringFormat='Expanded Segments: {0}'}"/>
+        <StatusBarItem Content="{Binding RegisteredPlugins.Count, StringFormat='Active Plugins: {0}'}"/>
+    </StatusBar>
+</Grid>
+```
+
+### Integration Example: Complete Advanced Project
+
+```csharp
+public class CompleteAdvancedProjectViewModel : ViewModelBase
+{
+    private readonly IPluginService _pluginService;
+    private readonly GanttChartViewModel _ganttChart;
+    
+    public CompleteAdvancedProjectViewModel(IPluginService pluginService)
+    {
+        _pluginService = pluginService;
+        _ganttChart = new GanttChartViewModel();
+        
+        SetupAdvancedFeatures();
+        CreateComprehensiveProject();
+    }
+    
+    private void SetupAdvancedFeatures()
+    {
+        // 1. Register all plugins
+        RegisterAllPlugins();
+        
+        // 2. Configure multi-level time scale
+        ConfigureAdvancedTimeScale();
+        
+        // 3. Setup expandable segments
+        SetupExpandableSegments();
+        
+        // 4. Create annotations
+        CreateProjectAnnotations();
+    }
+    
+    private void RegisterAllPlugins()
+    {
+        _pluginService.RegisterPlugin(new TextAnnotationPlugin());
+        _pluginService.RegisterPlugin(new ShapeAnnotationPlugin());
+        _pluginService.RegisterPlugin(new LineAnnotationPlugin());
+        // Could register custom plugins here
+    }
+    
+    private void ConfigureAdvancedTimeScale()
+    {
+        var config = new MultiLevelTimeScaleConfiguration
+        {
+            Levels = new List<TimeLevelConfiguration>
+            {
+                new() { Unit = ExtendedTimeUnit.Year, Height = 35, IsVisible = true },
+                new() { Unit = ExtendedTimeUnit.Quarter, Height = 30, IsVisible = true },
+                new() { Unit = ExtendedTimeUnit.Month, Height = 25, IsVisible = true },
+                new() { Unit = ExtendedTimeUnit.Week, Height = 20, IsVisible = true }
+            },
+            EnableSmartVisibility = true,
+            EnableAutoFit = true
+        };
+        
+        _ganttChart.MultiLevelTimeScale = config;
+    }
+    
+    // Additional methods for complete setup...
+}
+```
+
+These advanced examples demonstrate the powerful new capabilities in GPM.Gantt v2.1.0, showcasing how the plugin system, multi-level time scales, and expandable segments can be combined to create sophisticated project management interfaces.

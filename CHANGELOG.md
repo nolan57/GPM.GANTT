@@ -5,6 +5,54 @@ All notable changes to the GPM.Gantt project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-01-15
+
+### Added
+- **Plugin-Based Annotation System**: Comprehensive annotation framework with extensible plugin architecture
+  - `IAnnotationPlugin` interface for custom annotation plugins
+  - Built-in plugins: TextAnnotationPlugin, ShapeAnnotationPlugin, LineAnnotationPlugin
+  - `IPluginService` for plugin management and lifecycle
+  - Rich configuration system with `IAnnotationConfig` implementations
+  - Support for text, shape, and line annotations with customizable properties
+- **Expandable Time Axis Segments**: Dynamic time period expansion functionality
+  - `TimeSegmentExpansion` model for defining expandable segments
+  - `ExtendedTimeUnit` enumeration supporting Minute, Hour, Day, Week, Month, Quarter, Year
+  - Interactive expansion/collapse of specific time periods
+  - Maintain granularity context while exploring detailed time periods
+- **Multi-Level Time Scale Display**: Simultaneous visualization of multiple time granularities
+  - `MultiLevelTimeScaleConfiguration` for complex time scale setups
+  - `TimeLevelConfiguration` for individual time level properties
+  - `TimeScaleContext` for rendering context management
+  - `MultiLevelTimeScaleTick` interactive control with expand/collapse functionality
+  - Smart visibility management based on viewport and zoom level
+  - Support for Year/Quarter/Month/Week/Day/Hour combinations
+- **Advanced Demo Application**: Comprehensive demonstration of new features
+  - Interactive plugin system showcase
+  - Multi-level time scale configuration examples
+  - Expandable time segment demonstrations
+  - Performance optimization examples with large datasets
+
+### Enhanced
+- **Plugin Architecture**: Extensible framework for custom functionality
+- **Time Management**: Advanced time scale handling with multiple granularities
+- **Interactive Controls**: Enhanced user interaction with time scale elements
+- **Configuration System**: Flexible configuration for complex time scale scenarios
+- **Performance**: Optimized rendering for multi-level time scales and annotations
+
+### Technical Features
+- **Element Pooling**: Improved performance with reusable UI elements for annotations
+- **Smart Visibility**: Automatic show/hide of time levels based on viewport
+- **Plugin Discovery**: Dynamic plugin loading and registration
+- **Configuration Persistence**: Save and restore complex time scale configurations
+- **Event System**: Rich event model for expansion/collapse interactions
+
+### API Additions
+- New interfaces: `IAnnotationPlugin`, `IAnnotationConfig`, `IPluginService`
+- New models: `TimeSegmentExpansion`, `TimeLevelConfiguration`, `MultiLevelTimeScaleConfiguration`
+- New controls: `MultiLevelTimeScaleTick`
+- New enumerations: `ExtendedTimeUnit`, `AnnotationType`
+- Extended configuration options for advanced time scale management
+
 ## [2.0.1] - 2025-01-07
 
 ### Fixed
@@ -73,13 +121,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned Features
-- **Task Dependencies**: Visual dependency lines with automatic layout
-- **Export Capabilities**: PDF, PNG, Excel, and SVG export functionality
-- **Advanced Timeline Features**: Baselines, critical path analysis, and resource allocation
-- **Collaborative Editing**: Real-time collaborative editing support
-- **Plugin Architecture**: Extensible plugin system for custom functionality
-- **Mobile/Touch Support**: Touch-optimized interactions for mobile devices
+### Upcoming Features (v3.0.0)
+- 🚧 Task dependencies with automatic layout
+- 🚧 Export capabilities (PDF, PNG, Excel, SVG)
+- 🚧 Advanced timeline features (baselines, critical path)
+- 🚧 Collaborative editing support
+- 🚧 Mobile/touch support optimization
 
 ### Under Development
 - **Dependency Visualization**: Smart dependency line routing with conflict resolution

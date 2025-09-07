@@ -1,6 +1,8 @@
 # Time Management - GPM.Gantt
 
-This guide explains how to work with time scales, formatting, and timeline calculations in GPM.Gantt.
+# Time Management Guide - GPM.Gantt v2.1.0
+
+This guide explains how to work with time scales, formatting, and timeline calculations in GPM.Gantt, including the advanced features introduced in version 2.1.0.
 
 ## Overview
 
@@ -499,3 +501,91 @@ public class CachedTimelineCalculator
 6. **Test with different cultures** and timezones
 7. **Provide user controls** for time unit selection
 8. **Validate time ranges** before applying to the chart
+
+## Advanced Time Management (v2.1.0)
+
+### Multi-Level Time Scale
+
+Display multiple time granularities simultaneously for enhanced visualization:
+
+```csharp
+// Configure multi-level time scale
+var multiLevelConfig = new MultiLevelTimeScaleConfiguration
+{
+    Levels = new List<TimeLevelConfiguration>
+    {
+        new TimeLevelConfiguration
+        {
+            Unit = ExtendedTimeUnit.Year,
+            Height = 35,
+            DateFormat = "yyyy"
+        },
+        new TimeLevelConfiguration
+        {
+            Unit = ExtendedTimeUnit.Month,
+            Height = 25,
+            DateFormat = "MMM"
+        },
+        new TimeLevelConfiguration
+        {
+            Unit = ExtendedTimeUnit.Week,
+            Height = 20,
+            DateFormat = "ww"
+        }
+    },
+    EnableSmartVisibility = true,
+    VisibilityThreshold = TimeSpan.FromDays(365)
+};
+
+ganttContainer.MultiLevelTimeScale = multiLevelConfig;
+```
+
+### Expandable Time Segments
+
+Interactively expand specific time periods for detailed exploration:
+
+```csharp
+// Create expandable time segment
+var expansion = new TimeSegmentExpansion
+{
+    StartTime = DateTime.Today.AddDays(14),
+    EndTime = DateTime.Today.AddDays(21),
+    OriginalUnit = ExtendedTimeUnit.Week,
+    ExpandedUnit = ExtendedTimeUnit.Day,
+    IsExpanded = false,
+    DisplayName = "Critical Week - Detailed View"
+};
+
+ganttContainer.TimeSegmentExpansions.Add(expansion);
+
+// Handle expansion events
+expansion.ExpansionRequested += (sender, e) =>
+{
+    // Update UI to show daily granularity for this week
+    RefreshTimeScale();
+};
+```
+
+### Extended Time Units
+
+New time units provide more granular control:
+
+```csharp
+// Available extended time units
+ExtendedTimeUnit.Minute  // For detailed scheduling
+ExtendedTimeUnit.Hour    // For hourly planning
+ExtendedTimeUnit.Day     // Standard daily view
+ExtendedTimeUnit.Week    // Weekly overview
+ExtendedTimeUnit.Month   // Monthly planning
+ExtendedTimeUnit.Quarter // Quarterly business planning
+ExtendedTimeUnit.Year    // Strategic long-term planning
+
+// Use extended units in configurations
+var config = new TimeLevelConfiguration
+{
+    Unit = ExtendedTimeUnit.Quarter,
+    DateFormat = "Q{0} yyyy"  // "Q2 2024"
+};
+```
+
+These advanced features enable sophisticated time visualization scenarios for complex project management needs.

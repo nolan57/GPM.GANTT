@@ -1,14 +1,19 @@
 # GPM.Gantt API Reference
 
+Comprehensive API documentation for the GPM.Gantt WPF component library.
+
 ## Table of Contents
 
 1. [Core Models](#core-models)
 2. [Services](#services)
-3. [Rendering](#rendering)
-4. [Templates](#templates)
-5. [Calendar System](#calendar-system)
-6. [Utilities](#utilities)
-7. [Examples](#examples)
+3. [Plugin System](#plugin-system)
+4. [Multi-Level Time Scale](#multi-level-time-scale)
+5. [Expandable Time Axis](#expandable-time-axis)
+6. [Rendering](#rendering)
+7. [Templates](#templates)
+8. [Calendar System](#calendar-system)
+9. [Utilities](#utilities)
+10. [Examples](#examples)
 
 ## Core Models
 
@@ -309,6 +314,285 @@ var options = new TemplateApplicationOptions
 };
 
 var tasks = await templateService.ApplyTemplateAsync("software-dev-template", options);
+```
+
+## Plugin System
+
+### IAnnotationPlugin Interface
+
+Base interface for all annotation plugins.
+
+```csharp
+public interface IAnnotationPlugin
+{
+    string Name { get; }
+    AnnotationType Type { get; }
+    string Version { get; }
+    string Description { get; }
+    
+    UIElement CreateElement(IAnnotationConfig config);
+    void UpdateElement(UIElement element, IAnnotationConfig config);
+    bool ValidateConfig(IAnnotationConfig config);
+    IAnnotationConfig CreateDefaultConfig();
+    void Initialize(IServiceProvider serviceProvider);
+    void Cleanup();
+}
+```
+
+### Built-in Annotation Plugins
+
+**TextAnnotationPlugin**
+Provides text-based annotations with rich formatting options.
+
+```csharp
+var textConfig = new TextAnnotationConfig
+{
+    Text = "Important Milestone",
+    FontFamily = "Arial",
+    FontSize = 14,
+    Color = "#FF0000",
+    BackgroundColor = "#FFFF00",
+    X = 100, Y = 50,
+    Width = 200, Height = 30
+};
+
+var textElement = textPlugin.CreateElement(textConfig);
+```
+
+**ShapeAnnotationPlugin**
+Creates geometric shapes for visual emphasis.
+
+```csharp
+var shapeConfig = new ShapeAnnotationConfig
+{
+    ShapeType = "Rectangle", // Rectangle, Ellipse, Triangle, Diamond
+    FillColor = "#FF4CAF50",
+    StrokeColor = "#FF2196F3",
+    StrokeThickness = 2,
+    X = 150, Y = 75,
+    Width = 100, Height = 50
+};
+
+var shapeElement = shapePlugin.CreateElement(shapeConfig);
+```
+
+**LineAnnotationPlugin**
+Draws lines and arrows for connections and emphasis.
+
+```csharp
+var lineConfig = new LineAnnotationConfig
+{
+    X = 50, Y = 25,
+    X2 = 200, Y2 = 25,
+    StrokeColor = "#FFFF5722",
+    StrokeThickness = 3,
+    EndCapType = "Arrow"
+};
+
+var lineElement = linePlugin.CreateElement(lineConfig);
+```
+
+### IPluginService
+
+Manages plugin registration and lifecycle.
+
+```csharp
+public interface IPluginService
+{
+    void RegisterPlugin(IAnnotationPlugin plugin);
+    void UnregisterPlugin(string pluginName);
+    IAnnotationPlugin? GetPlugin(string name);
+    IAnnotationPlugin? GetPlugin(AnnotationType type);
+    List<IAnnotationPlugin> GetAllPlugins();
+    List<IAnnotationPlugin> GetPluginsByType(AnnotationType type);
+    void LoadPluginsFromDirectory(string directoryPath);
+    bool IsPluginRegistered(string name);
+}
+```
+
+**Usage Example:**
+```csharp
+var pluginService = new PluginService();
+
+// Register built-in plugins
+plugginService.RegisterPlugin(new TextAnnotationPlugin());
+plugginService.RegisterPlugin(new ShapeAnnotationPlugin());
+plugginService.RegisterPlugin(new LineAnnotationPlugin());
+
+// Use plugin to create annotation
+var textPlugin = pluginService.GetPlugin(AnnotationType.Text);
+var config = textPlugin.CreateDefaultConfig();
+var element = textPlugin.CreateElement(config);
+```
+
+## Multi-Level Time Scale
+
+Simultaneous visualization of multiple time granularities.
+
+### ExtendedTimeUnit Enumeration
+
+```csharp
+public enum ExtendedTimeUnit
+{
+    Minute = 0,
+    Hour = 1,
+    Day = 2,
+    Week = 3,
+    Month = 4,
+    Quarter = 5,
+    Year = 6
+}
+```
+
+### TimeLevelConfiguration
+
+```csharp
+public class TimeLevelConfiguration
+{
+    public ExtendedTimeUnit Unit { get; set; }
+    public bool IsVisible { get; set; }
+    public double Height { get; set; }
+    public string BackgroundColor { get; set; }
+    public string TextColor { get; set; }
+    public string FontFamily { get; set; }
+    public double FontSize { get; set; }
+    public string DateFormat { get; set; }
+    public HorizontalAlignment TextAlignment { get; set; }
+    public bool ShowBorders { get; set; }
+    public string BorderColor { get; set; }
+    public double BorderThickness { get; set; }
+    public int ZIndex { get; set; }
+}
+```
+
+### MultiLevelTimeScaleConfiguration
+
+```csharp
+public class MultiLevelTimeScaleConfiguration
+{
+    public List<TimeLevelConfiguration> Levels { get; set; }
+    public double TotalHeight { get; set; }
+    public bool EnableSmartVisibility { get; set; }
+    public TimeSpan VisibilityThreshold { get; set; }
+    public bool EnableAutoFit { get; set; }
+    public string Theme { get; set; }
+}
+```
+
+### TimeScaleContext
+
+```csharp
+public class TimeScaleContext
+{
+    public DateTime ViewportStart { get; set; }
+    public DateTime ViewportEnd { get; set; }
+    public double ViewportWidth { get; set; }
+    public double PixelsPerDay { get; set; }
+    public ExtendedTimeUnit PrimaryUnit { get; set; }
+    public CultureInfo Culture { get; set; }
+    public List<TimeSegmentExpansion> ActiveExpansions { get; set; }
+}
+```
+
+**Configuration Example:**
+```csharp
+var multiLevelConfig = new MultiLevelTimeScaleConfiguration
+{
+    Levels = new List<TimeLevelConfiguration>
+    {
+        new TimeLevelConfiguration
+        {
+            Unit = ExtendedTimeUnit.Year,
+            IsVisible = true,
+            Height = 30,
+            DateFormat = "yyyy",
+            FontSize = 14
+        },
+        new TimeLevelConfiguration
+        {
+            Unit = ExtendedTimeUnit.Quarter,
+            IsVisible = true,
+            Height = 25,
+            DateFormat = "Q{0}",
+            FontSize = 12
+        },
+        new TimeLevelConfiguration
+        {
+            Unit = ExtendedTimeUnit.Month,
+            IsVisible = true,
+            Height = 25,
+            DateFormat = "MMM",
+            FontSize = 11
+        },
+        new TimeLevelConfiguration
+        {
+            Unit = ExtendedTimeUnit.Week,
+            IsVisible = true,
+            Height = 20,
+            DateFormat = "ww",
+            FontSize = 10
+        }
+    },
+    EnableSmartVisibility = true,
+    VisibilityThreshold = TimeSpan.FromDays(365)
+};
+
+ganttContainer.MultiLevelTimeScale = multiLevelConfig;
+```
+
+## Expandable Time Axis
+
+Allows dynamic expansion of specific time periods while maintaining other granularities.
+
+### TimeSegmentExpansion Model
+
+```csharp
+public class TimeSegmentExpansion
+{
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public ExtendedTimeUnit OriginalUnit { get; set; }
+    public ExtendedTimeUnit ExpandedUnit { get; set; }
+    public bool IsExpanded { get; set; }
+    public string SegmentId { get; set; }
+    public bool IsCollapsible { get; set; }
+    public string DisplayName { get; set; }
+}
+```
+
+### MultiLevelTimeScaleTick
+
+Interactive time scale component with expand/collapse functionality.
+
+```csharp
+public class MultiLevelTimeScaleTick : UserControl
+{
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public ExtendedTimeUnit Unit { get; set; }
+    public string DisplayText { get; set; }
+    public bool IsExpandable { get; set; }
+    public bool IsExpanded { get; set; }
+    
+    public event EventHandler<TimeSegmentExpansionRequestedEventArgs> ExpansionRequested;
+    public event EventHandler<TimeSegmentCollapseRequestedEventArgs> CollapseRequested;
+}
+```
+
+**Usage Example:**
+```csharp
+// Expand a specific week to show daily details
+var expansion = new TimeSegmentExpansion
+{
+    StartTime = new DateTime(2024, 3, 18), // Monday
+    EndTime = new DateTime(2024, 3, 24),   // Sunday
+    OriginalUnit = ExtendedTimeUnit.Week,
+    ExpandedUnit = ExtendedTimeUnit.Day,
+    IsExpanded = true,
+    DisplayName = "Week 12 - Detailed View"
+};
+
+ganttContainer.TimeSegmentExpansions.Add(expansion);
 ```
 
 ## Rendering

@@ -1,6 +1,6 @@
-# Getting Started with GPM.Gantt
+# Getting Started with GPM.Gantt v2.1.0
 
-This guide will help you get up and running with GPM.Gantt in your WPF application.
+This guide will help you get up and running with GPM.Gantt in your WPF application, including the new advanced features introduced in version 2.1.0.
 
 ## Installation
 
@@ -251,3 +251,73 @@ if (errors.Any())
 - For large datasets, consider implementing virtualization
 - Use appropriate `TimeUnit` for your data granularity
 - Limit the number of visible tasks with `TaskCount`
+
+## Advanced Features (v2.1.0)
+
+GPM.Gantt v2.1.0 introduces powerful advanced features for enhanced project visualization:
+
+### Plugin-Based Annotations
+
+Add rich annotations to your Gantt charts:
+
+```csharp
+// Register annotation plugins
+var pluginService = new PluginService();
+plugginService.RegisterPlugin(new TextAnnotationPlugin());
+plugginService.RegisterPlugin(new ShapeAnnotationPlugin());
+plugginService.RegisterPlugin(new LineAnnotationPlugin());
+
+// Create text annotation
+var textConfig = new TextAnnotationConfig
+{
+    Text = "Critical Milestone",
+    FontSize = 14,
+    Color = "#FF0000",
+    X = 100, Y = 50
+};
+```
+
+### Multi-Level Time Scale
+
+Display multiple time granularities simultaneously:
+
+```csharp
+var multiLevelConfig = new MultiLevelTimeScaleConfiguration
+{
+    Levels = new List<TimeLevelConfiguration>
+    {
+        new() { Unit = ExtendedTimeUnit.Year, Height = 35 },
+        new() { Unit = ExtendedTimeUnit.Month, Height = 25 },
+        new() { Unit = ExtendedTimeUnit.Week, Height = 20 }
+    },
+    EnableSmartVisibility = true
+};
+
+ganttContainer.MultiLevelTimeScale = multiLevelConfig;
+```
+
+### Expandable Time Segments
+
+Interactively expand specific time periods for detailed exploration:
+
+```csharp
+var expansion = new TimeSegmentExpansion
+{
+    StartTime = DateTime.Today.AddDays(14),
+    EndTime = DateTime.Today.AddDays(21),
+    OriginalUnit = ExtendedTimeUnit.Week,
+    ExpandedUnit = ExtendedTimeUnit.Day,
+    DisplayName = "Critical Week"
+};
+
+ganttContainer.TimeSegmentExpansions.Add(expansion);
+```
+
+## Next Steps
+
+1. **Explore Examples**: Check out the comprehensive examples in `docs/examples.md`
+2. **API Reference**: Review the detailed API documentation in `docs/api-reference.md`
+3. **Advanced Configuration**: Learn about performance optimization and advanced theming
+4. **Plugin Development**: Create custom annotation plugins for specialized needs
+
+For more detailed information and advanced scenarios, see the complete documentation in the `docs/` folder.

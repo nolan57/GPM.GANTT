@@ -1,6 +1,8 @@
 # Task Management - GPM.Gantt
 
-This guide covers working with tasks, validation, and task-related operations in GPM.Gantt.
+# Task Management Guide - GPM.Gantt v2.1.0
+
+This guide covers working with tasks, validation, and task-related operations in GPM.Gantt, including the advanced features introduced in version 2.1.0.
 
 ## Task Model Overview
 
@@ -702,3 +704,117 @@ public static class ProgressCalculator
 2. **Use efficient collection operations** when manipulating many tasks
 3. **Cache calculated values** like progress and durations
 4. **Implement virtualization** for very large task lists
+
+## Advanced Task Features (v2.1.0)
+
+### Annotation Integration
+
+Tasks can be enhanced with rich annotations using the plugin system:
+
+```csharp
+// Create a task with associated annotations
+var task = new GanttTask
+{
+    Title = "Critical Development Phase",
+    Start = DateTime.Today.AddDays(10),
+    End = DateTime.Today.AddDays(20),
+    RowIndex = 1,
+    Priority = TaskPriority.Critical,
+    Status = TaskStatus.InProgress
+};
+
+// Add annotation metadata to task
+var annotations = new List<TaskAnnotation>
+{
+    new TaskAnnotation
+    {
+        Type = AnnotationType.Text,
+        Content = "High Risk - Security Review Required",
+        Position = new Point(150, 25),
+        Priority = AnnotationPriority.High
+    },
+    new TaskAnnotation
+    {
+        Type = AnnotationType.Shape,
+        Content = "Triangle",
+        FillColor = "#FFFF0000",
+        Position = new Point(100, 10)
+    }
+};
+
+task.Metadata["Annotations"] = annotations;
+```
+
+### Multi-Level Time Context
+
+Tasks can be displayed with context-aware time scales:
+
+```csharp
+// Configure task for multi-level display
+var task = new GanttTask
+{
+    Title = "Project Phase",
+    Start = new DateTime(2024, 1, 1),
+    End = new DateTime(2024, 12, 31),
+    RowIndex = 1
+};
+
+// Add time scale context information
+var timeContext = new TaskTimeContext
+{
+    PrimaryUnit = ExtendedTimeUnit.Month,
+    SecondaryUnits = new[] { ExtendedTimeUnit.Week, ExtendedTimeUnit.Day },
+    GranularityPreference = TimeGranularityPreference.Auto,
+    DetailLevel = TaskDetailLevel.Summary
+};
+
+task.Metadata["TimeContext"] = timeContext;
+```
+
+### Expandable Task Segments
+
+Tasks can be broken down into expandable segments for detailed planning:
+
+```csharp
+// Create a task with expandable segments
+var task = new GanttTask
+{
+    Title = "Software Development",
+    Start = DateTime.Today,
+    End = DateTime.Today.AddDays(90),
+    RowIndex = 1
+};
+
+// Define expandable segments
+var segments = new List<TaskSegment>
+{
+    new TaskSegment
+    {
+        Title = "Design Phase",
+        Start = DateTime.Today,
+        End = DateTime.Today.AddDays(15),
+        IsExpandable = true,
+        DetailLevel = TaskDetailLevel.Summary
+    },
+    new TaskSegment
+    {
+        Title = "Implementation",
+        Start = DateTime.Today.AddDays(15),
+        End = DateTime.Today.AddDays(60),
+        IsExpandable = true,
+        DetailLevel = TaskDetailLevel.Summary
+    },
+    new TaskSegment
+    {
+        Title = "Testing",
+        Start = DateTime.Today.AddDays(60),
+        End = DateTime.Today.AddDays(90),
+        IsExpandable = false,
+        DetailLevel = TaskDetailLevel.Detail
+    }
+};
+
+task.Metadata["Segments"] = segments;
+```
+
+These advanced features enable sophisticated task management scenarios with rich visualization capabilities.

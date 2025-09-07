@@ -1,6 +1,6 @@
-# Troubleshooting Guide - GPM.Gantt
+# Troubleshooting Guide - GPM.Gantt v2.1.0
 
-This guide helps you diagnose and resolve common issues when working with GPM.Gantt.
+This guide helps you diagnose and resolve common issues when working with GPM.Gantt, including troubleshooting for the advanced features introduced in version 2.1.0.
 
 ## Common Issues and Solutions
 
@@ -597,3 +597,112 @@ If you encounter a blocking issue, consider these temporary workarounds:
 3. **Implement custom validation** if built-in validation is insufficient
 4. **Create wrapper components** to encapsulate problematic functionality
 5. **Use timer-based updates** instead of real-time binding for performance issues
+
+## Advanced Feature Troubleshooting (v2.1.0)
+
+### Plugin System Issues
+
+#### Problem
+Annotations not displaying or plugin functionality not working.
+
+#### Solutions
+
+**Verify Plugin Registration**
+```csharp
+// Ensure plugins are properly registered
+var pluginService = new PluginService();
+pluginService.RegisterPlugin(new TextAnnotationPlugin());
+pluginService.RegisterPlugin(new ShapeAnnotationPlugin());
+pluginService.RegisterPlugin(new LineAnnotationPlugin());
+
+// Check if plugins are registered
+if (!pluginService.IsPluginRegistered("TextAnnotationPlugin"))
+{
+    Console.WriteLine("Text annotation plugin not registered");
+}
+```
+
+**Check Plugin Configuration**
+```csharp
+// Verify plugin configuration
+var config = new PluginConfiguration
+{
+    EnableElementPooling = true,
+    MaxPooledElements = 100,
+    EnableLazyLoading = true
+};
+
+ganttContainer.PluginConfiguration = config;
+```
+
+### Multi-Level Time Scale Issues
+
+#### Problem
+Time scale levels not displaying correctly or overlapping.
+
+#### Solutions
+
+**Verify Level Configuration**
+```csharp
+// Check multi-level configuration
+var config = new MultiLevelTimeScaleConfiguration
+{
+    Levels = new List<TimeLevelConfiguration>
+    {
+        new TimeLevelConfiguration { Unit = ExtendedTimeUnit.Year, Height = 35 },
+        new TimeLevelConfiguration { Unit = ExtendedTimeUnit.Month, Height = 25 },
+        new TimeLevelConfiguration { Unit = ExtendedTimeUnit.Week, Height = 20 }
+    },
+    EnableSmartVisibility = true,
+    TotalHeight = 80 // Ensure total height is sufficient
+};
+
+ganttContainer.MultiLevelTimeScale = config;
+```
+
+**Check Z-Index Ordering**
+```csharp
+// Ensure proper Z-index ordering
+config.Levels[0].ZIndex = 3; // Year level on top
+config.Levels[1].ZIndex = 2; // Month level in middle
+config.Levels[2].ZIndex = 1; // Week level at bottom
+```
+
+### Expandable Time Segment Issues
+
+#### Problem
+Time segments not expanding or collapsing as expected.
+
+#### Solutions
+
+**Verify Expansion Configuration**
+```csharp
+// Check expansion settings
+var expansion = new TimeSegmentExpansion
+{
+    StartTime = DateTime.Today.AddDays(14),
+    EndTime = DateTime.Today.AddDays(21),
+    OriginalUnit = ExtendedTimeUnit.Week,
+    ExpandedUnit = ExtendedTimeUnit.Day,
+    IsExpanded = false,
+    IsCollapsible = true
+};
+
+ganttContainer.TimeSegmentExpansions.Add(expansion);
+
+// Ensure event handlers are attached
+expansion.ExpansionRequested += OnExpansionRequested;
+expansion.CollapseRequested += OnCollapseRequested;
+```
+
+**Check Time Range Consistency**
+```csharp
+// Verify expansion time ranges are within chart bounds
+if (expansion.StartTime < ganttContainer.StartTime || 
+    expansion.EndTime > ganttContainer.EndTime)
+{
+    Console.WriteLine("Expansion time range outside chart bounds");
+}
+```
+
+These advanced troubleshooting techniques help resolve issues with the new GPM.Gantt v2.1.0 features.

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿﻿﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0-windows</TargetFramework>
@@ -14,12 +14,12 @@
     <Authors>GPM Development Team</Authors>
     <Company>GPM</Company>
     <Product>GPM Gantt Chart Component</Product>
-    <Description>A modern, enterprise-grade WPF Gantt chart component library designed for high-performance project management applications. Features include task dependencies, critical path analysis, export capabilities, advanced calendar system, and template management.</Description>
-    <PackageTags>WPF;Gantt;Chart;Project-Management;Task-Dependencies;Critical-Path;Export;Calendar;Templates</PackageTags>
+    <Description>A modern, enterprise-grade WPF Gantt chart component library designed for high-performance project management applications. Features include plugin-based annotation system, expandable time axis segments, multi-level time scale display, custom task shapes, comprehensive theme management, and performance optimizations.</Description>
+    <PackageTags>WPF;Gantt;Chart;Project-Management;Annotations;Time-Scale;Expandable-Time;Multi-Level;Plugin-System;Custom-Shapes;Themes</PackageTags>
     <PackageProjectUrl>https://github.com/yourorg/GPM</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Version 2.1.0: Added task dependencies with visual lines, export to PDF/PNG, advanced calendar system, and template management.</PackageReleaseNotes>
+    <PackageReleaseNotes>Version 2.1.0: Added plugin-based annotation system with text, shape, and line annotations, expandable time axis segments, and multi-level time scale display.</PackageReleaseNotes>
     <Copyright>Copyright © GPM 2024</Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
@@ -54,6 +54,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="9.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>

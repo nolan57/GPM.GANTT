@@ -1,6 +1,6 @@
-# Configuration Guide - GPM.Gantt
+# Configuration Guide - GPM.Gantt v2.1.0
 
-This guide covers all configuration options available in GPM.Gantt to customize the appearance and behavior of your Gantt charts.
+This guide covers all configuration options available in GPM.Gantt to customize the appearance and behavior of your Gantt charts, including the advanced features introduced in version 2.1.0.
 
 ## Configuration Overview
 
@@ -397,3 +397,113 @@ Create reusable theme resource dictionaries:
 2. **Theme consistency**: Use resource dictionaries for consistent theming
 3. **Configuration validation**: Validate configuration settings at runtime
 4. **Documentation**: Document custom configurations and their use cases
+
+## Advanced Configuration (v2.1.0)
+
+GPM.Gantt v2.1.0 introduces powerful new configuration options for enhanced visualization.
+
+### Multi-Level Time Scale Configuration
+
+Configure multiple time granularities simultaneously:
+
+```csharp
+var multiLevelConfig = new MultiLevelTimeScaleConfiguration
+{
+    Levels = new List<TimeLevelConfiguration>
+    {
+        new TimeLevelConfiguration
+        {
+            Unit = ExtendedTimeUnit.Year,
+            IsVisible = true,
+            Height = 35,
+            BackgroundColor = "#FF2C3E50",
+            TextColor = "#FFFFFFFF",
+            FontFamily = "Segoe UI",
+            FontSize = 16,
+            DateFormat = "yyyy",
+            TextAlignment = HorizontalAlignment.Center,
+            ShowBorders = true,
+            BorderColor = "#FF34495E",
+            BorderThickness = 1,
+            ZIndex = 4
+        },
+        new TimeLevelConfiguration
+        {
+            Unit = ExtendedTimeUnit.Month,
+            IsVisible = true,
+            Height = 25,
+            BackgroundColor = "#FF3498DB",
+            TextColor = "#FFFFFFFF",
+            FontFamily = "Segoe UI",
+            FontSize = 12,
+            DateFormat = "MMM",
+            TextAlignment = HorizontalAlignment.Center,
+            ShowBorders = true,
+            BorderColor = "#FF2980B9",
+            BorderThickness = 1,
+            ZIndex = 2
+        }
+    },
+    TotalHeight = 60,
+    EnableSmartVisibility = true,
+    VisibilityThreshold = TimeSpan.FromDays(365),
+    EnableAutoFit = true
+};
+
+ganttContainer.MultiLevelTimeScale = multiLevelConfig;
+```
+
+### Time Segment Expansion Configuration
+
+Set up interactive time period expansion:
+
+```csharp
+// Configure default expansion behavior
+var expansionConfig = new TimeSegmentExpansionConfiguration
+{
+    DefaultExpandedUnit = ExtendedTimeUnit.Day,
+    AnimationDuration = TimeSpan.FromMilliseconds(300),
+    EnableSmoothTransitions = true,
+    MaxConcurrentExpansions = 3
+};
+
+ganttContainer.TimeSegmentExpansionConfig = expansionConfig;
+
+// Add specific expansions
+var expansion = new TimeSegmentExpansion
+{
+    StartTime = DateTime.Today.AddDays(14),
+    EndTime = DateTime.Today.AddDays(21),
+    OriginalUnit = ExtendedTimeUnit.Week,
+    ExpandedUnit = ExtendedTimeUnit.Day,
+    IsExpanded = false,
+    IsCollapsible = true,
+    DisplayName = "Detailed View"
+};
+
+ganttContainer.TimeSegmentExpansions.Add(expansion);
+```
+
+### Plugin System Configuration
+
+Configure annotation plugins and their behavior:
+
+```csharp
+var pluginConfig = new PluginConfiguration
+{
+    EnableElementPooling = true,
+    MaxPooledElements = 100,
+    EnableLazyLoading = true,
+    PluginLoadingTimeout = TimeSpan.FromSeconds(30)
+};
+
+ganttContainer.PluginConfiguration = pluginConfig;
+
+// Register plugins
+var pluginService = new PluginService(pluginConfig);
+pluginService.RegisterPlugin(new TextAnnotationPlugin());
+pluginService.RegisterPlugin(new ShapeAnnotationPlugin());
+pluginService.RegisterPlugin(new LineAnnotationPlugin());
+```
+
+These advanced configuration options provide powerful capabilities for creating sophisticated Gantt chart visualizations.
