@@ -2,7 +2,15 @@
 
 ## Overview
 
-The GPM Gantt Chart now supports custom task bar shapes beyond the traditional rectangle. This flexible architecture allows you to create visually distinct task bars using diamond ends, chevron arrows, rounded rectangles, milestones, and even custom shapes.
+The GPM Gantt Chart now supports custom task bar shapes beyond the traditional rectangle. This flexible architecture allows you to create visually distinct task bars using diamond ends, chevron arrows, rounded rectangles, milestones, and even custom shapes. The implementation includes recent performance optimizations and error handling improvements for enterprise-grade applications.
+
+## Recent Updates (v2.0.1)
+
+### Performance Enhancements
+- **Shape Rendering Optimization**: Improved rendering performance for complex shapes
+- **Memory Management**: Enhanced memory usage for shape renderers
+- **Error Handling**: Better fallback mechanisms when shape rendering fails
+- **Validation**: Comprehensive shape parameter validation
 
 ## Architecture
 
@@ -260,22 +268,84 @@ var accessibleParams = new ShapeRenderingParameters
 
 ### Common Issues
 
-1. **Shapes not appearing**: Ensure `UseEnhancedShapeRendering = true`
-2. **Performance issues**: Enable virtualization for large datasets
-3. **Hit testing problems**: Verify `GetHitTestGeometry` implementation
-4. **Layout issues**: Check that shape bounds are calculated correctly
+1. **Shapes not appearing**: 
+   - Ensure `UseEnhancedShapeRendering = true`
+   - Verify shape parameters are valid
+   - Check for validation errors
 
-### Debugging
+2. **Performance issues**: 
+   - Enable virtualization for large datasets
+   - Reuse shape parameter instances
+   - Monitor with performance diagnostics
+
+3. **Hit testing problems**: 
+   - Verify `GetHitTestGeometry` implementation
+   - Ensure geometry bounds are correct
+
+4. **Layout issues**: 
+   - Check that shape bounds are calculated correctly
+   - Validate shape parameter ranges
+   - Use fallback to rectangle shape on errors
+
+### Advanced Debugging
 
 ```csharp
-// Enable debug output
-System.Diagnostics.Debug.WriteLine($"Task shape: {task.Shape}, Parameters: {task.ShapeParameters}");
-
-// Force shape refresh
-if (taskBar is EnhancedGanttTaskBar enhanced)
+// Enable comprehensive shape debugging
+public class ShapeDebugger
 {
-    enhanced.RefreshShape();
+    public static void DebugShape(GanttTask task, EnhancedGanttTaskBar taskBar)
+    {
+        Console.WriteLine($"Task: {task.Title}");
+        Console.WriteLine($"Shape: {task.Shape}");
+        Console.WriteLine($"Parameters: {task.ShapeParameters}");
+        Console.WriteLine($"TaskBar Type: {taskBar.GetType().Name}");
+        Console.WriteLine($"Is Enhanced: {taskBar is EnhancedGanttTaskBar}");
+        
+        if (taskBar is EnhancedGanttTaskBar enhanced)
+        {
+            Console.WriteLine($"Enhanced Shape: {enhanced.Shape}");
+            Console.WriteLine($"Legacy Mode: {enhanced.UseLegacyRendering}");
+        }
+        
+        // Test shape renderer
+        var renderer = TaskBarShapeRendererFactory.GetRenderer(task.Shape);
+        if (renderer != null)
+        {
+            Console.WriteLine($"Renderer: {renderer.GetType().Name}");
+        }
+        else
+        {
+            Console.WriteLine("ERROR: No renderer found for shape");
+        }
+    }
+    
+    public static void ValidateShapeGeometry(TaskBarShape shape, Rect bounds, ShapeRenderingParameters? parameters)
+    {
+        try
+        {
+            var renderer = TaskBarShapeRendererFactory.GetRenderer(shape);
+            var geometry = renderer?.CreateGeometry(bounds, 0, parameters);
+            
+            if (geometry != null)
+            {
+                Console.WriteLine($"Geometry created successfully for {shape}");
+                Console.WriteLine($"Bounds: {geometry.Bounds}");
+            }
+            else
+            {
+                Console.WriteLine($"ERROR: Failed to create geometry for {shape}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR: Exception creating geometry: {ex.Message}");
+        }
+    }
 }
+
+// Usage in debugging
+ShapeDebugger.DebugShape(task, taskBar);
+ShapeDebugger.ValidateShapeGeometry(TaskBarShape.DiamondEnds, new Rect(0, 0, 100, 20), task.ShapeParameters);
 ```
 
 ## Migration Guide
@@ -315,4 +385,30 @@ foreach (var task in existingTasks.Where(t => t.Priority == TaskPriority.Critica
 }
 ```
 
-This implementation provides a flexible, extensible, and performance-optimized solution for custom task bar shapes while maintaining full backward compatibility with existing code.
+## Best Practices Summary
+
+### 1. Performance Optimization
+- **Reuse shape parameters** for similar tasks
+- **Enable virtualization** for large datasets (>500 tasks)
+- **Monitor performance** with built-in diagnostics
+- **Use appropriate performance levels** based on requirements
+
+### 2. Error Handling
+- **Validate shape parameters** before assignment
+- **Implement fallback mechanisms** to rectangle shape
+- **Handle exceptions gracefully** during shape rendering
+- **Use validation services** for comprehensive checking
+
+### 3. Accessibility
+- **Ensure minimum sizes** for shape elements (12px minimum)
+- **Maintain sufficient contrast** for shape definition
+- **Avoid overly complex shapes** that may be hard to distinguish
+- **Test with different display scales** and DPI settings
+
+### 4. Memory Management
+- **Reuse shape parameter instances** when possible
+- **Enable auto memory optimization** for large datasets
+- **Monitor memory usage** during shape-intensive operations
+- **Clean up resources** properly in dispose patterns
+
+This implementation provides a flexible, extensible, and performance-optimized solution for custom task bar shapes while maintaining full backward compatibility and enterprise-grade reliability.

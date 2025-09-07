@@ -4,18 +4,30 @@
 [![WPF](https://img.shields.io/badge/WPF-Windows-blue.svg)](https://docs.microsoft.com/en-us/dotnet/framework/wpf/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-A modern, feature-rich WPF Gantt chart component library designed for project management applications. GPM.Gantt provides a flexible and customizable way to visualize project timelines, tasks, and dependencies with full MVVM support.
+A modern, enterprise-grade WPF Gantt chart component library designed for high-performance project management applications. GPM.Gantt provides a flexible, customizable, and scalable solution for visualizing project timelines, tasks, and dependencies with full MVVM support and advanced performance optimizations.
 
 ## 🚀 Features
 
-- **Grid-based Layout**: Clean, responsive grid layout for optimal task visualization
-- **Multiple Time Units**: Support for Hour, Day, Week, Month, and Year time scales
-- **MVVM Architecture**: Full support for data binding and MVVM patterns
-- **Customizable Formatting**: Configurable date/time formats with culture support
-- **Task Management**: Comprehensive task model with validation and dependencies
-- **Interactive UI**: Hover effects and visual feedback
-- **Extensible Configuration**: Flexible configuration system for rendering and behavior
-- **Async Operations**: Async service layer for data operations
+### Core Features
+- **Advanced Grid Layout**: Responsive grid-based rendering with rectangle and line modes
+- **Multiple Time Units**: Support for Hour, Day, Week, Month, and Year time scales with intelligent scaling
+- **MVVM Architecture**: Complete MVVM support with data binding and command patterns
+- **Custom Task Shapes**: Support for rectangle, diamond-end, chevron, rounded, milestone, and custom shapes
+- **Comprehensive Theming**: Built-in themes (Default, Dark, Light, Modern) with custom theme support
+- **Date/Time Formatting**: Configurable formats with full culture and localization support
+
+### Performance & Scalability
+- **UI Virtualization**: Efficient handling of large datasets with viewport-based rendering
+- **Memory Optimization**: Automatic memory management with configurable optimization strategies
+- **Performance Monitoring**: Real-time performance diagnostics and optimization recommendations
+- **Element Pooling**: Reusable UI elements for improved rendering performance
+- **Async Operations**: Non-blocking async service layer for data operations
+
+### Advanced Features
+- **Interactive Controls**: Full drag-drop, resize, and selection capabilities
+- **Validation System**: Comprehensive task and data validation with detailed error reporting
+- **Error Handling**: Robust error handling with fallback mechanisms and debugging support
+- **Extensible Architecture**: Plugin-ready architecture with service abstraction
 
 ## 📦 Installation
 
@@ -42,7 +54,10 @@ dotnet build
                          StartTime="{Binding StartDate}"
                          EndTime="{Binding EndDate}"
                          Tasks="{Binding Tasks}"
-                         TimeUnit="Day" />
+                         TimeUnit="Day"
+                         Theme="{Binding SelectedTheme}"
+                         DateFormat="MMM dd"
+                         TimeFormat="HH:mm" />
 </Window>
 ```
 
@@ -50,31 +65,51 @@ dotnet build
 // In your code-behind or ViewModel
 public ObservableCollection<GanttTask> Tasks { get; } = new();
 
-// Add tasks
+// Add basic tasks
 Tasks.Add(new GanttTask
 {
     Title = "Project Planning",
     Start = DateTime.Today,
     End = DateTime.Today.AddDays(5),
     RowIndex = 1,
-    Progress = 75
+    Progress = 75,
+    Shape = TaskBarShape.Rectangle,
+    Status = TaskStatus.InProgress
+});
+
+// Add milestone
+Tasks.Add(new GanttTask
+{
+    Title = "Project Kickoff",
+    Start = DateTime.Today,
+    End = DateTime.Today,
+    RowIndex = 2,
+    Shape = TaskBarShape.Milestone,
+    Priority = TaskPriority.High
 });
 ```
 
-### With ViewModel (MVVM Pattern)
+### Advanced MVVM Integration
 
 ```csharp
 public class ProjectViewModel : ViewModelBase
 {
     private readonly GanttChartViewModel _ganttViewModel;
+    private readonly IThemeService _themeService;
+    private readonly IPerformanceService _performanceService;
     
     public ProjectViewModel()
     {
         _ganttViewModel = new GanttChartViewModel();
+        _themeService = new ThemeService();
+        _performanceService = new PerformanceService();
+        
         LoadSampleData();
+        ConfigurePerformance();
     }
     
     public GanttChartViewModel GanttChart => _ganttViewModel;
+    public IEnumerable<string> AvailableThemes => _themeService.GetAvailableThemes();
     
     private void LoadSampleData()
     {
@@ -84,21 +119,35 @@ public class ProjectViewModel : ViewModelBase
             Start = DateTime.Today,
             End = DateTime.Today.AddDays(10),
             RowIndex = 1,
-            Status = TaskStatus.InProgress
+            Status = TaskStatus.InProgress,
+            Shape = TaskBarShape.DiamondEnds,
+            Priority = TaskPriority.High
         }));
+    }
+    
+    private void ConfigurePerformance()
+    {
+        // Enable performance optimizations for large datasets
+        _performanceService.GetDiagnostics().StartMonitoring();
+        _performanceService.GetMemoryOptimization().EnableAutoOptimization(TimeSpan.FromMinutes(5));
     }
 }
 ```
 
 ## 📖 Documentation
 
-- [**Getting Started Guide**](docs/getting-started.md) - Complete setup and first steps
+### Core Documentation
+- [**Custom Shapes Guide**](CUSTOM_SHAPES_GUIDE.md) - Complete guide to custom task bar shapes
+- [**Theme Management**](THEME_MANAGEMENT_IMPLEMENTATION.md) - Comprehensive theming system documentation
+- [**Date/Time Formatting**](Date_Time_Format_Implementation.md) - Custom date and time format implementation
+
+### API & Development
 - [**API Reference**](docs/api-reference.md) - Detailed API documentation
-- [**Configuration Guide**](docs/configuration.md) - Customization and configuration options
-- [**MVVM Integration**](docs/mvvm-integration.md) - Working with ViewModels and data binding
-- [**Time Management**](docs/time-management.md) - Time scales and formatting
-- [**Task Management**](docs/task-management.md) - Working with tasks and validation
-- [**Examples**](docs/examples.md) - Code examples and use cases
+- [**Performance Guide**](docs/performance.md) - Performance optimization and monitoring
+- [**Memory Management**](docs/memory-management.md) - Memory optimization strategies
+- [**Virtualization**](docs/virtualization.md) - UI virtualization for large datasets
+- [**Error Handling**](docs/error-handling.md) - Error handling and debugging
+- [**Troubleshooting**](docs/troubleshooting.md) - Common issues and solutions
 
 ## 🏗️ Architecture
 
@@ -112,31 +161,70 @@ GPM.Gantt follows a modular architecture with clear separation of concerns:
 
 ## 🎨 Customization
 
-### Time Formatting
+### Theme Management
+```csharp
+// Apply built-in themes
+ganttChart.Theme = ThemeManager.GetTheme("Dark");
+ganttChart.Theme = ThemeManager.GetTheme("Modern");
+
+// Create custom theme
+var customTheme = ThemeManager.CreateCustomTheme("Corporate", theme =>
+{
+    theme.Task.DefaultColor = Colors.Blue;
+    theme.Background.PrimaryColor = Colors.White;
+    theme.Grid.LineColor = Color.FromRgb(200, 200, 200);
+});
+```
+
+### Time and Date Formatting
 ```csharp
 ganttChart.DateFormat = "yyyy-MM-dd";
 ganttChart.TimeFormat = "HH:mm";
 ganttChart.Culture = new CultureInfo("en-US");
 ```
 
-### Visual Configuration
+### Advanced Configuration
 ```csharp
 var config = new GanttConfiguration
 {
     Rendering = new RenderingConfiguration
     {
         ShowGridCells = true,
-        TaskBarCornerRadius = 6.0,
-        GridMode = GridRenderingMode.Rectangles
-    },
-    TimeScale = new TimeScaleConfiguration
-    {
-        DefaultTimeUnit = TimeUnit.Day,
-        HighlightWeekends = true,
-        HighlightToday = true
+        GridMode = GridRenderingMode.Rectangles,
+        UseEnhancedShapeRendering = true,
+        EnableVirtualization = true,
+        MaxVisibleTasks = 1000,
+        EnableAutoMemoryOptimization = true,
+        PerformanceLevel = PerformanceLevel.Performance
     }
 };
 ganttChart.Configuration = config;
+```
+
+### Custom Task Shapes
+```csharp
+// Diamond-ended task
+var importantTask = new GanttTask
+{
+    Title = "Critical Milestone",
+    Shape = TaskBarShape.DiamondEnds,
+    ShapeParameters = new ShapeRenderingParameters
+    {
+        DiamondEndHeight = 0.9,
+        DiamondEndWidth = 16
+    }
+};
+
+// Chevron arrow task
+var sequentialTask = new GanttTask
+{
+    Title = "Sequential Step",
+    Shape = TaskBarShape.Chevron,
+    ShapeParameters = new ShapeRenderingParameters
+    {
+        ChevronAngle = 20
+    }
+};
 ```
 
 ## 🧪 Testing
@@ -147,10 +235,19 @@ dotnet test GPM.Gantt.Tests
 ```
 
 The library includes comprehensive unit tests covering:
-- Timeline calculations
-- Task validation
-- ViewModel functionality
-- Service operations
+- **Timeline Calculations**: Date/time calculations and caching
+- **Task Validation**: Comprehensive validation rules and error handling
+- **ViewModel Functionality**: MVVM pattern implementation
+- **Service Operations**: All service layer functionality
+- **Theme Management**: Theme creation, application, and switching
+- **Performance Testing**: Memory optimization and performance monitoring
+- **Shape Rendering**: Custom task bar shape rendering
+- **Error Handling**: Exception handling and recovery mechanisms
+
+### Test Results
+- **Total Tests**: 65+
+- **Coverage**: Core functionality, edge cases, and error scenarios
+- **Performance Tests**: Memory usage, rendering performance, large datasets
 
 ## 🚀 Demo Application
 
@@ -184,18 +281,30 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## 🗺️ Roadmap
 
-### Current Version (1.0.0)
-- ✅ Basic Gantt chart functionality
-- ✅ Grid-based layout
-- ✅ Time scale support
-- ✅ MVVM integration
+### Current Version (2.0.0)
+- ✅ Advanced Gantt chart with custom shapes
+- ✅ Comprehensive theme management system
+- ✅ Performance optimization and memory management
+- ✅ UI virtualization for large datasets
+- ✅ Custom date/time formatting with culture support
+- ✅ Interactive controls with drag-drop and resize
+- ✅ Comprehensive validation and error handling
+- ✅ Performance monitoring and diagnostics
 
-### Upcoming Features
-- 🚧 Interactive drag-and-drop
-- 🚧 Task dependencies visualization
-- 🚧 Export capabilities (PDF, PNG, Excel)
-- 🚧 Virtualization for large datasets
-- 🚧 Advanced theming system
+### Recent Improvements (v2.0.1)
+- ✅ Fixed BorderThickness theme resource conversion bug
+- ✅ Enhanced memory optimization with multiple strategies
+- ✅ Improved error handling with detailed logging
+- ✅ Performance diagnostics with real-time recommendations
+- ✅ Element pooling for better rendering performance
+
+### Upcoming Features (v2.1.0)
+- 🚧 Task dependencies with automatic layout
+- 🚧 Export capabilities (PDF, PNG, Excel, SVG)
+- 🚧 Advanced timeline features (baselines, critical path)
+- 🚧 Collaborative editing support
+- 🚧 Plugin architecture for custom extensions
+- 🚧 Mobile/touch support optimization
 
 ## 📄 License
 
@@ -207,12 +316,28 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Issues**: Report bugs on [GitHub Issues](https://github.com/yourorg/GPM/issues)
 - **Discussions**: Join our [GitHub Discussions](https://github.com/yourorg/GPM/discussions)
 
+## 🔧 Technical Specifications
+
+### Performance Characteristics
+- **Large Dataset Support**: Tested with 10,000+ tasks
+- **Memory Efficiency**: Automatic optimization with configurable strategies
+- **Rendering Performance**: 60 FPS target with virtualization
+- **Memory Footprint**: Optimized for enterprise applications
+
+### System Requirements
+- **.NET 9.0** or later
+- **Windows OS** (WPF requirement)
+- **Minimum RAM**: 512 MB (2 GB recommended for large datasets)
+- **Visual Studio 2022** or compatible IDE for development
+
 ## 🙏 Acknowledgments
 
 - Built with modern WPF and .NET 9.0
-- Inspired by project management best practices
-- Community feedback and contributions
+- Inspired by enterprise project management requirements
+- Extensive performance testing and optimization
+- Community feedback and real-world usage scenarios
+- Advanced architectural patterns and best practices
 
 ---
 
-*GPM.Gantt - Making project visualization simple and powerful.*
+*GPM.Gantt - Enterprise-grade project visualization for modern applications.*

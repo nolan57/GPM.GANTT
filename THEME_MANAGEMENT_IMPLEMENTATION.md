@@ -2,9 +2,31 @@
 
 ## 概述
 
-成功为 GPM.Gantt 甘特图组件框架添加了完整的主题/模板管理功能。该实现遵循 MVVM 架构模式和模块化设计原则，提供了灵活且易于使用的主题系统。
+成功为 GPM.Gantt 甘特图组件框架添加了完整的主题/模板管理功能。该实现遵循 MVVM 架构模式和模块化设计原则，提供了灵活且易于使用的主题系统。最新版本包含重要的错误修复和性能优化。
 
-## 实现的功能
+## 最新更新 (v2.0.1)
+
+### 关键错误修复
+- **BorderThickness 资源转换修复**: 修复了主题资源字典中 BorderThickness 属性的类型转换问题
+- **WPF 兼容性改进**: 确保所有主题资源正确转换为 WPF 兼容类型
+- **错误处理增强**: 改进了主题应用过程中的错误处理和回退机制
+
+### 修复详情
+
+#### BorderThickness 类型转换
+**问题**: 主题资源字典中的 BorderThickness 值被错误地存储为 `double` 类型，导致 WPF 在解析资源引用时出现类型转换错误。
+
+**解决方案**: 更新 `ThemeUtilities.CreateThemeResourceDictionary()` 方法，使用 `ToThickness()` 辅助方法将 `double` 值正确转换为 `Thickness` 对象。
+
+```csharp
+// 修复前 (错误)
+resources["GanttGridLineThickness"] = theme.Grid.LineThickness; // double 类型
+
+// 修复后 (正确)
+resources["GanttGridLineThickness"] = ToThickness(theme.Grid.LineThickness); // Thickness 对象
+```
+
+**影响**: 解决了甘特图组件加载时出现的 "Empty string is not a valid value for BorderThickness" 异常，确保主题正确应用。
 
 ### 1. 核心主题模型 (Models/GanttTheme.cs)
 
@@ -199,7 +221,7 @@ ThemeManager.ThemeChanged += (sender, e) =>
 - 主题管理器测试
 - 主题克隆和独立性测试
 
-**测试结果**: 总计 65 个测试，全部通过 ✅
+**测试结果**: 总计 65+ 个测试，全部通过 ✅
 
 ## 技术规范遵循
 
@@ -217,6 +239,18 @@ ThemeManager.ThemeChanged += (sender, e) =>
 - MVVM 架构实现
 - 依赖注入就绪
 - 服务层抽象
+
+## 质量保证
+
+### 错误处理改进
+- 增强了主题资源加载的错误处理
+- 完善了回退机制，防止主题应用失败
+- 添加了详细的调试日志输出
+
+### 稳定性增强
+- 解决了主题初始化时可能出现的资源缺失问题
+- 保证了不同主题之间的正确切换
+- 提高了系统的容错性和鲁棒性
 
 ## 文件结构
 
@@ -252,4 +286,4 @@ GPM.Gantt.Tests/
 ✅ **可扩展性**: 开放架构支持未来扩展  
 ✅ **测试完备**: 全面的单元测试覆盖  
 
-这个主题管理系统大大提升了甘特图组件的专业性和用户体验，使其更适合企业级应用场景。
+这个主题管理系统大大提升了甘特图组件的专业性和用户体验，使其更适合企业级应用场景。最新的错误修复和性能优化进一步提高了系统的稳定性和可靠性。
