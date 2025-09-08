@@ -1,74 +1,204 @@
-using System.Windows.Media;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
+using System.Windows.Media;
 
 namespace GPM.Gantt
 {
-    // Time cell: Used for time display in the first row, inherits from GanttRectangle
-    public class GanttTimeCell : GanttRectangle
+    /// <summary>
+    /// Represents a time cell in the Gantt chart header.
+    /// </summary>
+    public class GanttTimeCell : GanttShapeBase
     {
-        public static readonly DependencyProperty TimeTextProperty = DependencyProperty.Register(
-            nameof(TimeText), typeof(string), typeof(GanttTimeCell), new FrameworkPropertyMetadata(string.Empty));
+        #region Dependency Properties
 
+        /// <summary>
+        /// Gets or sets the row index of the time cell.
+        /// </summary>
+        public static readonly DependencyProperty RowIndexProperty = DependencyProperty.Register(
+            nameof(RowIndex), typeof(int), typeof(GanttTimeCell), new PropertyMetadata(0));
+
+        /// <summary>
+        /// Gets or sets the time index of the cell.
+        /// </summary>
+        public static readonly DependencyProperty TimeIndexProperty = DependencyProperty.Register(
+            nameof(TimeIndex), typeof(int), typeof(GanttTimeCell), new PropertyMetadata(0));
+
+        /// <summary>
+        /// Gets or sets the text to display in the time cell.
+        /// </summary>
+        public static readonly DependencyProperty TimeTextProperty = DependencyProperty.Register(
+            nameof(TimeText), typeof(string), typeof(GanttTimeCell), new PropertyMetadata(string.Empty));
+
+        /// <summary>
+        /// Gets or sets whether this cell represents a weekend.
+        /// </summary>
+        public static readonly DependencyProperty IsWeekendProperty = DependencyProperty.Register(
+            nameof(IsWeekend), typeof(bool), typeof(GanttTimeCell), new PropertyMetadata(false));
+
+        /// <summary>
+        /// Gets or sets whether this cell represents today.
+        /// </summary>
+        public static readonly DependencyProperty IsTodayProperty = DependencyProperty.Register(
+            nameof(IsToday), typeof(bool), typeof(GanttTimeCell), new PropertyMetadata(false));
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the row index of the time cell.
+        /// </summary>
+        public int RowIndex
+        {
+            get => (int)GetValue(RowIndexProperty);
+            set => SetValue(RowIndexProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the time index of the cell.
+        /// </summary>
+        public int TimeIndex
+        {
+            get => (int)GetValue(TimeIndexProperty);
+            set => SetValue(TimeIndexProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the text to display in the time cell.
+        /// </summary>
         public string TimeText
         {
             get => (string)GetValue(TimeTextProperty);
             set => SetValue(TimeTextProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets whether this cell represents a weekend.
+        /// </summary>
+        public bool IsWeekend
+        {
+            get => (bool)GetValue(IsWeekendProperty);
+            set => SetValue(IsWeekendProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether this cell represents today.
+        /// </summary>
+        public bool IsToday
+        {
+            get => (bool)GetValue(IsTodayProperty);
+            set => SetValue(IsTodayProperty, value);
+        }
+
+        #endregion
+
+        #region Private Fields
+
+        private TextBlock? _textBlock;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the child element of the time cell.
+        /// </summary>
+        public UIElement? Child => _textBlock;
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the GanttTimeCell class.
+        /// </summary>
         public GanttTimeCell()
         {
-            ApplyDefaultTheme();
+            // Enable GPU rendering by default
+            EnableGpuRendering = true;
             
-            // Place text inside the border to display time
-            var tb = new TextBlock
+            // Create and configure the text block
+            _textBlock = new TextBlock
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
-                TextAlignment = TextAlignment.Center,
-                TextTrimming = TextTrimming.CharacterEllipsis
+                TextWrapping = TextWrapping.Wrap,
+                TextAlignment = TextAlignment.Center
             };
             
-            // Apply theme-aware text styling
-            try
+            // Add the text block as a child
+            if (_textBlock != null)
             {
-                tb.SetResourceReference(TextBlock.ForegroundProperty, "GanttTimeScaleTextBrush");
-                tb.SetResourceReference(TextBlock.FontFamilyProperty, "GanttTimeScaleFontFamily");
-                tb.SetResourceReference(TextBlock.FontSizeProperty, "GanttTimeScaleFontSize");
-                tb.SetResourceReference(TextBlock.FontWeightProperty, "GanttTimeScaleFontWeight");
+                AddVisualChild(_textBlock);
+                AddLogicalChild(_textBlock);
             }
-            catch
-            {
-                // Fallback styling
-                tb.Foreground = Brushes.Black;
-                tb.FontFamily = new FontFamily("Segoe UI");
-                tb.FontSize = 11;
-            }
-            
-            tb.SetBinding(TextBlock.TextProperty, new Binding(nameof(TimeText)) { Source = this });
-            Child = tb;
         }
-        
+
+        #endregion
+
+        #region Visual and Logical Children
+
         /// <summary>
-        /// Applies default theme styling to the time cell using resource references.
+        /// Gets the number of visual child elements within this element.
         /// </summary>
-        private void ApplyDefaultTheme()
+        protected override int VisualChildrenCount => _textBlock != null ? 1 : 0;
+
+        /// <summary>
+        /// Overrides System.Windows.Media.Visual.GetVisualChild(System.Int32),
+        /// and returns a child at the specified index from a collection of child elements.
+        /// </summary>
+        protected override Visual GetVisualChild(int index)
         {
-            try
-            {
-                // Apply theme-aware styling
-                this.SetResourceReference(BackgroundProperty, "GanttTimeScaleBackgroundBrush");
-                this.SetResourceReference(BorderBrushProperty, "GanttTimeScaleBorderBrush");
-                this.SetResourceReference(BorderThicknessProperty, "GanttTimeScaleBorderThickness");
-            }
-            catch
-            {
-                // Fallback to hardcoded values if theme resources aren't available yet
-                Background = new SolidColorBrush(Color.FromRgb(248, 249, 250));
-                BorderBrush = new SolidColorBrush(Color.FromRgb(222, 226, 230));
-                BorderThickness = new Thickness(1);
-            }
+            if (index == 0 && _textBlock != null)
+                return _textBlock;
+            throw new System.ArgumentOutOfRangeException(nameof(index));
         }
+
+        #endregion
+
+        #region Layout Override
+
+        /// <summary>
+        /// Measures the size in layout required for child elements.
+        /// </summary>
+        protected override Size MeasureOverride(Size constraint)
+        {
+            if (_textBlock != null)
+            {
+                _textBlock.Text = TimeText;
+                _textBlock.Measure(constraint);
+                return _textBlock.DesiredSize;
+            }
+            return new Size(0, 0);
+        }
+
+        /// <summary>
+        /// Positions child elements and determines a size for a System.Windows.FrameworkElement.
+        /// </summary>
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            if (_textBlock != null)
+            {
+                _textBlock.Text = TimeText;
+                _textBlock.Arrange(new Rect(finalSize));
+            }
+            return finalSize;
+        }
+
+        #endregion
+
+        #region Rendering Override
+
+        /// <summary>
+        /// Render time cell using traditional WPF method
+        /// </summary>
+        /// <param name="drawingContext">Drawing context</param>
+        protected override void RenderWithWpf(DrawingContext drawingContext)
+        {
+            // Use base class rendering method to render background
+            base.RenderWithWpf(drawingContext);
+        }
+
+        #endregion
     }
 }

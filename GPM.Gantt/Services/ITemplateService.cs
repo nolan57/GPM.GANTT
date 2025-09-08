@@ -79,7 +79,7 @@ namespace GPM.Gantt.Services
         /// <param name="templateId">ID of template to apply</param>
         /// <param name="options">Application options</param>
         /// <returns>List of created tasks</returns>
-        Task<List<GanttTask>> ApplyTemplateAsync(string templateId, TemplateApplicationOptions options);
+        Task<List<GanttTask>> ApplyTemplateAsync(string templateId, Models.Templates.TemplateApplicationOptions options);
         
         /// <summary>
         /// Creates a template from existing tasks

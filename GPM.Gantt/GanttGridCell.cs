@@ -1,72 +1,108 @@
-using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using GPM.Gantt.Models;
 
 namespace GPM.Gantt
 {
-    // Grid cell component: Located above grid rows and aligned with time columns
-    public class GanttGridCell : GanttRectangle
+    /// <summary>
+    /// Represents a single cell in the Gantt chart grid.
+    /// </summary>
+    public class GanttGridCell : GanttShapeBase
     {
-        public GanttGridCell()
+        #region Dependency Properties
+
+        /// <summary>
+        /// Gets or sets the row index of the cell.
+        /// </summary>
+        public static readonly DependencyProperty RowIndexProperty = DependencyProperty.Register(
+            nameof(RowIndex), typeof(int), typeof(GanttGridCell), new PropertyMetadata(0));
+
+        /// <summary>
+        /// Gets or sets the time index of the cell.
+        /// </summary>
+        public static readonly DependencyProperty TimeIndexProperty = DependencyProperty.Register(
+            nameof(TimeIndex), typeof(int), typeof(GanttGridCell), new PropertyMetadata(0));
+
+        /// <summary>
+        /// Gets or sets whether this cell represents a weekend.
+        /// </summary>
+        public static readonly DependencyProperty IsWeekendProperty = DependencyProperty.Register(
+            nameof(IsWeekend), typeof(bool), typeof(GanttGridCell), new PropertyMetadata(false));
+
+        /// <summary>
+        /// Gets or sets whether this cell represents today.
+        /// </summary>
+        public static readonly DependencyProperty IsTodayProperty = DependencyProperty.Register(
+            nameof(IsToday), typeof(bool), typeof(GanttGridCell), new PropertyMetadata(false));
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the row index of the cell.
+        /// </summary>
+        public int RowIndex
         {
-            // Set up property change notifications
-            DependencyPropertyDescriptor.FromProperty(IsWeekendProperty, typeof(GanttGridCell))
-                ?.AddValueChanged(this, (s, e) => UpdateCellStyling());
-            DependencyPropertyDescriptor.FromProperty(IsTodayProperty, typeof(GanttGridCell))
-                ?.AddValueChanged(this, (s, e) => UpdateCellStyling());
-                
-            ApplyDefaultTheme();
+            get => (int)GetValue(RowIndexProperty);
+            set => SetValue(RowIndexProperty, value);
         }
 
         /// <summary>
-        /// Applies default theme styling to the grid cell using resource references.
+        /// Gets or sets the time index of the cell.
         /// </summary>
-        private void ApplyDefaultTheme()
+        public int TimeIndex
         {
-            try
-            {
-                // Apply theme-aware styling
-                this.SetResourceReference(BackgroundProperty, "GanttSecondaryBackgroundBrush");
-                this.SetResourceReference(BorderBrushProperty, "GanttGridLineBrush");
-                this.SetResourceReference(BorderThicknessProperty, "GanttGridLineThickness");
-                
-                // Apply weekend/today styling based on properties
-                UpdateCellStyling();
-            }
-            catch
-            {
-                // Fallback to hardcoded values if theme resources aren't available yet
-                Background = System.Windows.Media.Brushes.White;
-                BorderBrush = System.Windows.Media.Brushes.LightGray;
-                BorderThickness = new System.Windows.Thickness(0.5);
-            }
+            get => (int)GetValue(TimeIndexProperty);
+            set => SetValue(TimeIndexProperty, value);
         }
-        
+
         /// <summary>
-        /// Updates cell styling based on IsWeekend and IsToday properties.
+        /// Gets or sets whether this cell represents a weekend.
         /// </summary>
-        private void UpdateCellStyling()
+        public bool IsWeekend
         {
-            try
-            {
-                if (IsToday)
-                {
-                    this.SetResourceReference(BackgroundProperty, "GanttTodayBackgroundBrush");
-                }
-                else if (IsWeekend)
-                {
-                    this.SetResourceReference(BackgroundProperty, "GanttWeekendBackgroundBrush");
-                }
-                else
-                {
-                    this.SetResourceReference(BackgroundProperty, "GanttSecondaryBackgroundBrush");
-                }
-            }
-            catch
-            {
-                // Fallback styling
-                Background = IsToday ? System.Windows.Media.Brushes.LightYellow :
-                            IsWeekend ? System.Windows.Media.Brushes.LightGray :
-                            System.Windows.Media.Brushes.White;
-            }
+            get => (bool)GetValue(IsWeekendProperty);
+            set => SetValue(IsWeekendProperty, value);
         }
+
+        /// <summary>
+        /// Gets or sets whether this cell represents today.
+        /// </summary>
+        public bool IsToday
+        {
+            get => (bool)GetValue(IsTodayProperty);
+            set => SetValue(IsTodayProperty, value);
+        }
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the GanttGridCell class.
+        /// </summary>
+        public GanttGridCell()
+        {
+            // Enable GPU rendering by default
+            EnableGpuRendering = true;
+        }
+
+        #endregion
+
+        #region Rendering Override
+
+        /// <summary>
+        /// Render grid cell using traditional WPF method
+        /// </summary>
+        /// <param name="drawingContext">Drawing context</param>
+        protected override void RenderWithWpf(DrawingContext drawingContext)
+        {
+            // Use base class rendering method
+            base.RenderWithWpf(drawingContext);
+        }
+
+        #endregion
     }
 }

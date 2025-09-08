@@ -1,12 +1,11 @@
-using System;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace GPM.Gantt.Utilities
 {
     /// <summary>
-    /// Provides element pooling for efficient memory management and UI element reuse.
-    /// Reduces garbage collection pressure by recycling frequently created UI elements.
+    /// Manages pools of reusable UI elements to improve performance.
     /// </summary>
     public class ElementPool
     {
@@ -43,7 +42,7 @@ namespace GPM.Gantt.Utilities
                 return;
                 
             // Clear parent references
-            if (cell.Parent is System.Windows.Controls.Panel parent)
+            if (cell.Parent is Panel parent)
             {
                 parent.Children.Remove(cell);
             }
@@ -77,7 +76,7 @@ namespace GPM.Gantt.Utilities
                 return;
                 
             // Clear parent references
-            if (row.Parent is System.Windows.Controls.Panel parent)
+            if (row.Parent is Panel parent)
             {
                 parent.Children.Remove(row);
             }
@@ -111,7 +110,7 @@ namespace GPM.Gantt.Utilities
                 return;
                 
             // Clear parent references
-            if (cell.Parent is System.Windows.Controls.Panel parent)
+            if (cell.Parent is Panel parent)
             {
                 parent.Children.Remove(cell);
             }
@@ -145,7 +144,7 @@ namespace GPM.Gantt.Utilities
                 return;
                 
             // Clear parent references
-            if (taskBar.Parent is System.Windows.Controls.Panel parent)
+            if (taskBar.Parent is Panel parent)
             {
                 parent.Children.Remove(taskBar);
             }
@@ -192,10 +191,10 @@ namespace GPM.Gantt.Utilities
             cell.IsToday = false;
             
             // Reset layout properties
-            System.Windows.Controls.Grid.SetRow(cell, 0);
-            System.Windows.Controls.Grid.SetColumn(cell, 0);
-            System.Windows.Controls.Grid.SetColumnSpan(cell, 1);
-            System.Windows.Controls.Grid.SetRowSpan(cell, 1);
+            Grid.SetRow(cell, 0);
+            Grid.SetColumn(cell, 0);
+            Grid.SetColumnSpan(cell, 1);
+            Grid.SetRowSpan(cell, 1);
         }
         
         private static void ResetGridRow(GanttGridRow row)
@@ -203,24 +202,24 @@ namespace GPM.Gantt.Utilities
             row.RowIndex = 0;
             
             // Reset layout properties
-            System.Windows.Controls.Grid.SetRow(row, 0);
-            System.Windows.Controls.Grid.SetColumn(row, 0);
-            System.Windows.Controls.Grid.SetColumnSpan(row, 1);
-            System.Windows.Controls.Grid.SetRowSpan(row, 1);
+            Grid.SetRow(row, 0);
+            Grid.SetColumn(row, 0);
+            Grid.SetColumnSpan(row, 1);
+            Grid.SetRowSpan(row, 1);
         }
         
         private static void ResetGridCell(GanttGridCell cell)
         {
-            cell.RowIndex = 0;
             cell.TimeIndex = 0;
+            cell.RowIndex = 0;
             cell.IsWeekend = false;
             cell.IsToday = false;
             
             // Reset layout properties
-            System.Windows.Controls.Grid.SetRow(cell, 0);
-            System.Windows.Controls.Grid.SetColumn(cell, 0);
-            System.Windows.Controls.Grid.SetColumnSpan(cell, 1);
-            System.Windows.Controls.Grid.SetRowSpan(cell, 1);
+            Grid.SetRow(cell, 0);
+            Grid.SetColumn(cell, 0);
+            Grid.SetColumnSpan(cell, 1);
+            Grid.SetRowSpan(cell, 1);
         }
         
         private static void ResetTaskBar(GanttTaskBar taskBar)
@@ -228,70 +227,31 @@ namespace GPM.Gantt.Utilities
             taskBar.RowIndex = 0;
             taskBar.TimeIndex = 0;
             taskBar.CustomText = string.Empty;
-            taskBar.IsInteractive = false;
-            taskBar.Progress = 0.0;
-            taskBar.Priority = Models.TaskPriority.Normal;
-            taskBar.Status = Models.TaskStatus.NotStarted;
-            taskBar.IsDragDropEnabled = false;
-            taskBar.IsResizeEnabled = false;
-            
-            // Reset enhanced task bar properties if applicable
-            if (taskBar is EnhancedGanttTaskBar enhancedTaskBar)
-            {
-                enhancedTaskBar.Shape = Models.TaskBarShape.Rectangle;
-                enhancedTaskBar.ShapeParameters = null;
-                enhancedTaskBar.UseLegacyRendering = false;
-            }
+            taskBar.Progress = 0;
+            taskBar.Priority = GPM.Gantt.Models.TaskPriority.Normal;
+            taskBar.Status = GPM.Gantt.Models.TaskStatus.NotStarted;
+            taskBar.IsSelected = false;
             
             // Reset layout properties
-            System.Windows.Controls.Grid.SetRow(taskBar, 0);
-            System.Windows.Controls.Grid.SetColumn(taskBar, 0);
-            System.Windows.Controls.Grid.SetColumnSpan(taskBar, 1);
-            System.Windows.Controls.Grid.SetRowSpan(taskBar, 1);
-            System.Windows.Controls.Panel.SetZIndex(taskBar, 0);
+            Grid.SetRow(taskBar, 0);
+            Grid.SetColumn(taskBar, 0);
+            Grid.SetColumnSpan(taskBar, 1);
+            Grid.SetRowSpan(taskBar, 1);
         }
         
         #endregion
     }
     
     /// <summary>
-    /// Provides statistics about element pool usage.
+    /// Statistics about element pool usage.
     /// </summary>
     public class PoolStatistics
     {
-        /// <summary>
-        /// Gets or sets the number of time cells in the pool.
-        /// </summary>
         public int TimeCellPoolSize { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the number of grid rows in the pool.
-        /// </summary>
         public int GridRowPoolSize { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the number of grid cells in the pool.
-        /// </summary>
         public int GridCellPoolSize { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the number of task bars in the pool.
-        /// </summary>
         public int TaskBarPoolSize { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the total number of elements in all pools.
-        /// </summary>
         public int TotalPoolSize { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the maximum allowed size for each pool.
-        /// </summary>
         public int MaxPoolSize { get; set; }
-        
-        /// <summary>
-        /// Gets the pool utilization percentage.
-        /// </summary>
-        public double UtilizationPercentage => MaxPoolSize > 0 ? (double)TotalPoolSize / (MaxPoolSize * 4) * 100 : 0;
     }
 }

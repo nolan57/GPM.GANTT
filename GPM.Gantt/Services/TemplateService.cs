@@ -108,7 +108,7 @@ namespace GPM.Gantt.Services
                             .ToList();
         }
 
-        public async Task<List<GanttTask>> ApplyTemplateAsync(string templateId, TemplateApplicationOptions options)
+        public async Task<List<GanttTask>> ApplyTemplateAsync(string templateId, Models.Templates.TemplateApplicationOptions options)
         {
             await Task.Delay(1);
             var template = await GetTemplateAsync(templateId);
@@ -550,7 +550,7 @@ namespace GPM.Gantt.Services
         }
 
         private async Task<List<GanttTask>> ScheduleTasksWithDependencies(List<GanttTask> tasks, 
-            ProjectTemplate template, Dictionary<string, Guid> taskIdMapping, TemplateApplicationOptions options)
+            ProjectTemplate template, Dictionary<string, Guid> taskIdMapping, Models.Templates.TemplateApplicationOptions options)
         {
             // This would integrate with the DependencyService for proper scheduling
             // For now, return tasks as-is

@@ -1,99 +1,15 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Media;
-using System.Windows.Input;
-using System.ComponentModel;
 using GPM.Gantt.Models;
 
 namespace GPM.Gantt
 {
     /// <summary>
-    /// Enhanced task bar with progress visualization, drag-and-drop support, and context menu functionality.
+    /// Represents a task bar in the Gantt chart with support for progress indication and interactive features.
     /// </summary>
-    public class GanttTaskBar : GanttRectangle
+    public class GanttTaskBar : GanttShapeBase
     {
-        #region Dependency Properties
-        
-        /// <summary>
-        /// Gets or sets the custom text displayed on the task bar.
-        /// </summary>
-        public static readonly DependencyProperty CustomTextProperty = DependencyProperty.Register(
-            nameof(CustomText), typeof(string), typeof(GanttTaskBar), new FrameworkPropertyMetadata(string.Empty));
-
-        public string CustomText
-        {
-            get => (string)GetValue(CustomTextProperty);
-            set => SetValue(CustomTextProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the progress percentage (0-100) for the task.
-        /// </summary>
-        public static readonly DependencyProperty ProgressProperty = DependencyProperty.Register(
-            nameof(Progress), typeof(double), typeof(GanttTaskBar), 
-            new FrameworkPropertyMetadata(0.0, OnProgressChanged));
-
-        public double Progress
-        {
-            get => (double)GetValue(ProgressProperty);
-            set => SetValue(ProgressProperty, Math.Max(0, Math.Min(100, value)));
-        }
-
-        /// <summary>
-        /// Gets or sets the priority of the task.
-        /// </summary>
-        public static readonly DependencyProperty PriorityProperty = DependencyProperty.Register(
-            nameof(Priority), typeof(TaskPriority), typeof(GanttTaskBar), 
-            new FrameworkPropertyMetadata(TaskPriority.Normal));
-
-        public TaskPriority Priority
-        {
-            get => (TaskPriority)GetValue(PriorityProperty);
-            set => SetValue(PriorityProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the status of the task.
-        /// </summary>
-        public static readonly DependencyProperty StatusProperty = DependencyProperty.Register(
-            nameof(Status), typeof(Models.TaskStatus), typeof(GanttTaskBar), 
-            new FrameworkPropertyMetadata(Models.TaskStatus.NotStarted, OnStatusChanged));
-
-        public Models.TaskStatus Status
-        {
-            get => (Models.TaskStatus)GetValue(StatusProperty);
-            set => SetValue(StatusProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets whether the task bar supports drag and drop operations.
-        /// </summary>
-        public static readonly DependencyProperty IsDragDropEnabledProperty = DependencyProperty.Register(
-            nameof(IsDragDropEnabled), typeof(bool), typeof(GanttTaskBar), 
-            new FrameworkPropertyMetadata(true));
-
-        public bool IsDragDropEnabled
-        {
-            get => (bool)GetValue(IsDragDropEnabledProperty);
-            set => SetValue(IsDragDropEnabledProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets whether the task bar supports resizing operations.
-        /// </summary>
-        public static readonly DependencyProperty IsResizeEnabledProperty = DependencyProperty.Register(
-            nameof(IsResizeEnabled), typeof(bool), typeof(GanttTaskBar), 
-            new FrameworkPropertyMetadata(true));
-
-        public bool IsResizeEnabled
-        {
-            get => (bool)GetValue(IsResizeEnabledProperty);
-            set => SetValue(IsResizeEnabledProperty, value);
-        }
-
-        #endregion
-
         #region Events
 
         /// <summary>
@@ -102,440 +18,448 @@ namespace GPM.Gantt
         public event EventHandler<TaskBarEventArgs>? TaskDoubleClicked;
 
         /// <summary>
-        /// Occurs when the task bar drag operation starts.
+        /// Occurs when a drag operation starts.
         /// </summary>
         public event EventHandler<TaskBarDragEventArgs>? DragStarted;
 
         /// <summary>
-        /// Occurs when the task bar is being dragged.
+        /// Occurs when a drag operation is in progress.
         /// </summary>
         public event EventHandler<TaskBarDragEventArgs>? Dragging;
 
         /// <summary>
-        /// Occurs when the task bar drag operation completes.
+        /// Occurs when a drag operation completes.
         /// </summary>
         public event EventHandler<TaskBarDragEventArgs>? DragCompleted;
 
         /// <summary>
-        /// Occurs when the task bar resize operation starts.
+        /// Occurs when a resize operation starts.
         /// </summary>
         public event EventHandler<TaskBarResizeEventArgs>? ResizeStarted;
 
         /// <summary>
-        /// Occurs when the task bar is being resized.
+        /// Occurs when a resize operation is in progress.
         /// </summary>
         public event EventHandler<TaskBarResizeEventArgs>? Resizing;
 
         /// <summary>
-        /// Occurs when the task bar resize operation completes.
+        /// Occurs when a resize operation completes.
         /// </summary>
         public event EventHandler<TaskBarResizeEventArgs>? ResizeCompleted;
 
         #endregion
 
+        #region Dependency Properties
+
+        /// <summary>
+        /// Gets or sets the row index of the task bar.
+        /// </summary>
+        public static readonly DependencyProperty RowIndexProperty = DependencyProperty.Register(
+            nameof(RowIndex), typeof(int), typeof(GanttTaskBar), new PropertyMetadata(0));
+
+        /// <summary>
+        /// Gets or sets the time index of the task bar.
+        /// </summary>
+        public static readonly DependencyProperty TimeIndexProperty = DependencyProperty.Register(
+            nameof(TimeIndex), typeof(int), typeof(GanttTaskBar), new PropertyMetadata(0));
+
+        /// <summary>
+        /// Gets or sets the custom text to display on the task bar.
+        /// </summary>
+        public static readonly DependencyProperty CustomTextProperty = DependencyProperty.Register(
+            nameof(CustomText), typeof(string), typeof(GanttTaskBar), new PropertyMetadata(string.Empty));
+
+        /// <summary>
+        /// Gets or sets whether the task bar is interactive.
+        /// </summary>
+        public static readonly DependencyProperty IsInteractiveProperty = DependencyProperty.Register(
+            nameof(IsInteractive), typeof(bool), typeof(GanttTaskBar), new PropertyMetadata(true));
+
+        /// <summary>
+        /// Gets or sets the progress percentage of the task (0-100).
+        /// </summary>
+        public static readonly DependencyProperty ProgressProperty = DependencyProperty.Register(
+            nameof(Progress), typeof(double), typeof(GanttTaskBar), new PropertyMetadata(0.0));
+
+        /// <summary>
+        /// Gets or sets the priority level of the task.
+        /// </summary>
+        public static readonly DependencyProperty PriorityProperty = DependencyProperty.Register(
+            nameof(Priority), typeof(TaskPriority), typeof(GanttTaskBar), new PropertyMetadata(GPM.Gantt.Models.TaskPriority.Normal));
+
+        /// <summary>
+        /// Gets or sets the status of the task.
+        /// </summary>
+        public static readonly DependencyProperty StatusProperty = DependencyProperty.Register(
+            nameof(Status), typeof(GPM.Gantt.Models.TaskStatus), typeof(GanttTaskBar), new PropertyMetadata(GPM.Gantt.Models.TaskStatus.NotStarted));
+
+        /// <summary>
+        /// Gets or sets whether drag and drop operations are enabled.
+        /// </summary>
+        public static readonly DependencyProperty IsDragDropEnabledProperty = DependencyProperty.Register(
+            nameof(IsDragDropEnabled), typeof(bool), typeof(GanttTaskBar), new PropertyMetadata(true));
+
+        /// <summary>
+        /// Gets or sets whether resizing operations are enabled.
+        /// </summary>
+        public static readonly DependencyProperty IsResizeEnabledProperty = DependencyProperty.Register(
+            nameof(IsResizeEnabled), typeof(bool), typeof(GanttTaskBar), new PropertyMetadata(true));
+
+        /// <summary>
+        /// Gets or sets whether the task bar is selected.
+        /// </summary>
+        public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(
+            nameof(IsSelected), typeof(bool), typeof(GanttTaskBar), new PropertyMetadata(false));
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the row index of the task bar.
+        /// </summary>
+        public int RowIndex
+        {
+            get => (int)GetValue(RowIndexProperty);
+            set => SetValue(RowIndexProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the time index of the task bar.
+        /// </summary>
+        public int TimeIndex
+        {
+            get => (int)GetValue(TimeIndexProperty);
+            set => SetValue(TimeIndexProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the custom text to display on the task bar.
+        /// </summary>
+        public string CustomText
+        {
+            get => (string)GetValue(CustomTextProperty);
+            set => SetValue(CustomTextProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether the task bar is interactive.
+        /// </summary>
+        public bool IsInteractive
+        {
+            get => (bool)GetValue(IsInteractiveProperty);
+            set => SetValue(IsInteractiveProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the progress percentage of the task (0-100).
+        /// </summary>
+        public double Progress
+        {
+            get => (double)GetValue(ProgressProperty);
+            set => SetValue(ProgressProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the priority level of the task.
+        /// </summary>
+        public GPM.Gantt.Models.TaskPriority Priority
+        {
+            get => (GPM.Gantt.Models.TaskPriority)GetValue(PriorityProperty);
+            set => SetValue(PriorityProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the status of the task.
+        /// </summary>
+        public GPM.Gantt.Models.TaskStatus Status
+        {
+            get => (GPM.Gantt.Models.TaskStatus)GetValue(StatusProperty);
+            set => SetValue(StatusProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether drag and drop operations are enabled.
+        /// </summary>
+        public bool IsDragDropEnabled
+        {
+            get => (bool)GetValue(IsDragDropEnabledProperty);
+            set => SetValue(IsDragDropEnabledProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether resizing operations are enabled.
+        /// </summary>
+        public bool IsResizeEnabled
+        {
+            get => (bool)GetValue(IsResizeEnabledProperty);
+            set => SetValue(IsResizeEnabledProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether the task bar is selected.
+        /// </summary>
+        public bool IsSelected
+        {
+            get => (bool)GetValue(IsSelectedProperty);
+            set => SetValue(IsSelectedProperty, value);
+        }
+
+        #endregion
+
         #region Private Fields
 
-        private Grid? _mainGrid;
-        private Border? _progressBar;
         private TextBlock? _textBlock;
-        private ContextMenu? _contextMenu;
-        private bool _isDragging;
-        private bool _isResizing;
-        private Point _lastMousePosition;
-        private ResizeDirection _resizeDirection = ResizeDirection.None;
-        private const double ResizeHandleWidth = 8.0;
+        private Border? _progressIndicator;
 
         #endregion
 
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the GanttTaskBar class.
+        /// </summary>
         public GanttTaskBar()
         {
-            CornerRadius = new CornerRadius(4);
-            ContentPadding = new Thickness(4, 2, 4, 2);
-            ZIndex = 10; // Ensure task bars appear above grid elements
+            // Enable GPU rendering by default
+            EnableGpuRendering = true;
             
-            InitializeTemplate();
-            InitializeContextMenu();
-            SetupEventHandlers();
-            ApplyDefaultTheme();
-        }
-
-        private void InitializeTemplate()
-        {
-            // Create main grid container
-            _mainGrid = new Grid();
-            
-            // Create progress bar background
-            _progressBar = new Border
-            {
-                Background = new SolidColorBrush(Color.FromArgb(80, 76, 175, 80)), // Semi-transparent green
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                CornerRadius = new CornerRadius(2)
-            };
-            
-            // Apply theme-aware styling to progress bar if possible
-            try
-            {
-                _progressBar.SetResourceReference(Border.BackgroundProperty, "GanttTaskCompletedBrush");
-                _progressBar.Opacity = 0.3; // Make it semi-transparent
-            }
-            catch
-            {
-                // Fallback to default if theme resource isn't available yet
-                _progressBar.Background = new SolidColorBrush(Color.FromArgb(80, 76, 175, 80));
-            }
-            
-            // Create text block
+            // Create and configure the text block
             _textBlock = new TextBlock
             {
+                HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
+                TextWrapping = TextWrapping.NoWrap,
+                TextTrimming = TextTrimming.CharacterEllipsis
+            };
+
+            // Create and configure the progress indicator
+            _progressIndicator = new Border
+            {
                 HorizontalAlignment = HorizontalAlignment.Left,
-                TextTrimming = TextTrimming.CharacterEllipsis,
-                Margin = new Thickness(4, 0, 4, 0),
-                FontWeight = FontWeights.Medium
+                VerticalAlignment = VerticalAlignment.Stretch
             };
-            
-            // Set theme-aware properties via resource bindings
-            _textBlock.SetResourceReference(TextBlock.ForegroundProperty, "GanttTaskTextBrush");
-            _textBlock.SetResourceReference(TextBlock.FontFamilyProperty, "GanttTaskFontFamily");
-            _textBlock.SetResourceReference(TextBlock.FontSizeProperty, "GanttTaskFontSize");
-            
-            // Bind text to CustomText property
-            _textBlock.SetBinding(TextBlock.TextProperty, new Binding(nameof(CustomText)) { Source = this });
-            
-            // Add elements to grid
-            _mainGrid.Children.Add(_progressBar);
-            _mainGrid.Children.Add(_textBlock);
-            
-            Child = _mainGrid;
-            
-            UpdateProgressDisplay();
-        }
 
-        private void InitializeContextMenu()
-        {
-            _contextMenu = new ContextMenu();
-            
-            var editItem = new MenuItem { Header = "Edit Task" };
-            editItem.Click += (s, e) => OnTaskDoubleClicked();
-            
-            var deleteItem = new MenuItem { Header = "Delete Task" };
-            deleteItem.Click += (s, e) => 
+            // Add children
+            if (_progressIndicator != null)
             {
-                // Raise event for parent to handle
-                TaskDoubleClicked?.Invoke(this, new TaskBarEventArgs(this, "Delete"));
-            };
-            
-            _contextMenu.Items.Add(editItem);
-            _contextMenu.Items.Add(new Separator());
-            _contextMenu.Items.Add(deleteItem);
-            
-            ContextMenu = _contextMenu;
-        }
-
-        private void SetupEventHandlers()
-        {
-            MouseLeftButtonDown += OnMouseLeftButtonDown;
-            MouseLeftButtonUp += OnMouseLeftButtonUp;
-            MouseMove += OnMouseMove;
-            MouseEnter += OnMouseEnter;
-            MouseLeave += OnMouseLeave;
-
-            // Use PreviewMouseLeftButtonDown for double-click detection
-            PreviewMouseLeftButtonDown += OnPreviewMouseLeftButtonDown;
-        }
-
-        private DateTime _lastClickTime;
-        private const int DoubleClickThreshold = 300; // milliseconds
-
-        private void OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            var currentTime = DateTime.Now;
-            if ((currentTime - _lastClickTime).TotalMilliseconds < DoubleClickThreshold)
-            {
-                OnTaskDoubleClicked();
-                e.Handled = true;
-            }
-            _lastClickTime = currentTime;
-        }
-
-        private static void OnProgressChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is GanttTaskBar taskBar)
-            {
-                taskBar.UpdateProgressDisplay();
-            }
-        }
-
-        private static void OnStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is GanttTaskBar taskBar)
-            {
-                taskBar.UpdateTaskBarStyling();
-            }
-        }
-
-        private void UpdateProgressDisplay()
-        {
-            if (_progressBar != null && _mainGrid != null)
-            {
-                var progressWidth = Math.Max(0, Math.Min(100, Progress)) / 100.0;
-                _progressBar.Width = ActualWidth > 0 ? ActualWidth * progressWidth : 0;
-                
-                // Update progress bar color based on status
-                var color = Status switch
-                {
-                    Models.TaskStatus.Completed => Color.FromArgb(80, 76, 175, 80), // Green
-                    Models.TaskStatus.InProgress => Color.FromArgb(80, 33, 150, 243), // Blue
-                    Models.TaskStatus.OnHold => Color.FromArgb(80, 255, 193, 7), // Amber
-                    Models.TaskStatus.Cancelled => Color.FromArgb(80, 244, 67, 54), // Red
-                    _ => Color.FromArgb(80, 158, 158, 158) // Gray
-                };
-                
-                _progressBar.Background = new SolidColorBrush(color);
-            }
-        }
-
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
-        {
-            base.OnRenderSizeChanged(sizeInfo);
-            UpdateProgressDisplay();
-        }
-
-        #region Mouse Event Handlers
-
-        private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (!IsInteractive) return;
-            
-            _lastMousePosition = e.GetPosition(this);
-            
-            // Check if we're near an edge for resizing
-            if (IsResizeEnabled)
-            {
-                _resizeDirection = GetResizeDirection(_lastMousePosition);
-                if (_resizeDirection != ResizeDirection.None)
-                {
-                    _isResizing = true;
-                    CaptureMouse();
-                    ResizeStarted?.Invoke(this, new TaskBarResizeEventArgs(this, _resizeDirection));
-                    e.Handled = true;
-                    return;
-                }
+                AddVisualChild(_progressIndicator);
+                AddLogicalChild(_progressIndicator);
             }
             
-            // Start drag operation
-            if (IsDragDropEnabled)
+            if (_textBlock != null)
             {
-                _isDragging = true;
-                CaptureMouse();
-                DragStarted?.Invoke(this, new TaskBarDragEventArgs(this, _lastMousePosition));
-            }
-            
-            // Handle selection
-            if (!IsSelected)
-            {
-                IsSelected = true;
-            }
-            
-            e.Handled = true;
-        }
-
-        private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            if (_isDragging)
-            {
-                _isDragging = false;
-                ReleaseMouseCapture();
-                DragCompleted?.Invoke(this, new TaskBarDragEventArgs(this, e.GetPosition(this)));
-            }
-            
-            if (_isResizing)
-            {
-                _isResizing = false;
-                ReleaseMouseCapture();
-                ResizeCompleted?.Invoke(this, new TaskBarResizeEventArgs(this, _resizeDirection));
-                _resizeDirection = ResizeDirection.None;
-            }
-            
-            e.Handled = true;
-        }
-
-        private void OnMouseMove(object sender, MouseEventArgs e)
-        {
-            var currentPosition = e.GetPosition(this);
-            
-            if (_isResizing)
-            {
-                Resizing?.Invoke(this, new TaskBarResizeEventArgs(this, _resizeDirection, currentPosition));
-                e.Handled = true;
-                return;
-            }
-            
-            if (_isDragging)
-            {
-                Dragging?.Invoke(this, new TaskBarDragEventArgs(this, currentPosition));
-                e.Handled = true;
-                return;
-            }
-            
-            // Update cursor based on position
-            if (IsResizeEnabled)
-            {
-                var resizeDir = GetResizeDirection(currentPosition);
-                Cursor = resizeDir switch
-                {
-                    ResizeDirection.Left or ResizeDirection.Right => Cursors.SizeWE,
-                    ResizeDirection.None => IsDragDropEnabled ? Cursors.Hand : Cursors.Arrow,
-                    _ => Cursors.Arrow
-                };
-            }
-            else if (IsDragDropEnabled)
-            {
-                Cursor = Cursors.Hand;
-            }
-        }
-
-        private void OnMouseEnter(object sender, MouseEventArgs e)
-        {
-            IsHovered = true;
-        }
-
-        private void OnMouseLeave(object sender, MouseEventArgs e)
-        {
-            IsHovered = false;
-            if (!_isDragging && !_isResizing)
-            {
-                Cursor = Cursors.Arrow;
+                AddVisualChild(_textBlock);
+                AddLogicalChild(_textBlock);
             }
         }
 
         #endregion
 
-        #region Helper Methods
+        #region Visual and Logical Children
 
-        private ResizeDirection GetResizeDirection(Point position)
+        /// <summary>
+        /// Gets the number of visual child elements within this element.
+        /// </summary>
+        protected override int VisualChildrenCount => (_textBlock != null ? 1 : 0) + (_progressIndicator != null ? 1 : 0);
+
+        /// <summary>
+        /// Overrides System.Windows.Media.Visual.GetVisualChild(System.Int32),
+        /// and returns a child at the specified index from a collection of child elements.
+        /// </summary>
+        protected override Visual GetVisualChild(int index)
         {
-            if (position.X <= ResizeHandleWidth)
-                return ResizeDirection.Left;
-            if (position.X >= ActualWidth - ResizeHandleWidth)
-                return ResizeDirection.Right;
-            return ResizeDirection.None;
+            if (index == 0 && _progressIndicator != null)
+                return _progressIndicator;
+            if (index == 1 && _textBlock != null)
+                return _textBlock;
+            throw new System.ArgumentOutOfRangeException(nameof(index));
         }
 
-        private void OnTaskDoubleClicked()
+        #endregion
+
+        #region Layout Override
+
+        /// <summary>
+        /// Measures the size in layout required for child elements.
+        /// </summary>
+        protected override Size MeasureOverride(Size constraint)
         {
-            TaskDoubleClicked?.Invoke(this, new TaskBarEventArgs(this, "Edit"));
+            if (_textBlock != null)
+            {
+                _textBlock.Text = CustomText;
+                _textBlock.Measure(constraint);
+            }
+            
+            if (_progressIndicator != null)
+            {
+                _progressIndicator.Measure(constraint);
+            }
+            
+            return new Size(0, 0); // Let parent determine size
         }
 
         /// <summary>
-        /// Applies default theme styling to the task bar using resource references.
+        /// Positions child elements and determines a size for a System.Windows.FrameworkElement.
         /// </summary>
-        private void ApplyDefaultTheme()
+        protected override Size ArrangeOverride(Size finalSize)
         {
-            try
+            if (_textBlock != null)
             {
-                // Apply theme-aware background color based on task status
-                this.SetResourceReference(BackgroundProperty, "GanttTaskDefaultBrush");
-                this.SetResourceReference(BorderBrushProperty, "GanttTaskBorderBrush");
-                this.SetResourceReference(BorderThicknessProperty, "GanttTaskBorderThickness");
-                this.SetResourceReference(CornerRadiusProperty, "GanttTaskCornerRadius");
+                _textBlock.Text = CustomText;
+                _textBlock.Arrange(new Rect(finalSize));
             }
-            catch
+            
+            if (_progressIndicator != null)
             {
-                // Fallback to hardcoded values if theme resources aren't available yet
-                Background = new SolidColorBrush(Color.FromRgb(33, 150, 243)); // Default blue
-                BorderBrush = new SolidColorBrush(Color.FromRgb(25, 118, 210));
-                BorderThickness = new Thickness(1);
-                CornerRadius = new CornerRadius(4);
+                // Update progress indicator width based on progress value
+                var progressWidth = finalSize.Width * (Progress / 100.0);
+                _progressIndicator.Width = progressWidth;
+                _progressIndicator.Arrange(new Rect(0, 0, progressWidth, finalSize.Height));
             }
+            
+            return finalSize;
+        }
+
+        #endregion
+
+        #region Rendering Override
+
+        /// <summary>
+        /// Render task bar using traditional WPF method
+        /// </summary>
+        /// <param name="drawingContext">Drawing context</param>
+        protected override void RenderWithWpf(DrawingContext drawingContext)
+        {
+            // Use base class rendering method to render background
+            base.RenderWithWpf(drawingContext);
+        }
+
+        #endregion
+
+        #region Event Raising Methods
+
+        /// <summary>
+        /// Raises the TaskDoubleClicked event.
+        /// </summary>
+        /// <param name="e">Event arguments</param>
+        protected virtual void OnTaskDoubleClicked(TaskBarEventArgs e)
+        {
+            TaskDoubleClicked?.Invoke(this, e);
         }
 
         /// <summary>
-        /// Updates the task bar styling based on current status.
+        /// Raises the DragStarted event.
         /// </summary>
-        private void UpdateTaskBarStyling()
+        /// <param name="e">Event arguments</param>
+        protected virtual void OnDragStarted(TaskBarDragEventArgs e)
         {
-            try
-            {
-                string backgroundResourceKey = Status switch
-                {
-                    Models.TaskStatus.Completed => "GanttTaskCompletedBrush",
-                    Models.TaskStatus.InProgress => "GanttTaskInProgressBrush",
-                    Models.TaskStatus.Cancelled => "GanttTaskOverdueBrush", // Use overdue color for cancelled
-                    Models.TaskStatus.OnHold => "GanttTaskOverdueBrush", // Use overdue color for on hold
-                    _ => "GanttTaskDefaultBrush"
-                };
-                
-                this.SetResourceReference(BackgroundProperty, backgroundResourceKey);
-            }
-            catch
-            {
-                // Fallback to default color if resource binding fails
-                Background = new SolidColorBrush(Color.FromRgb(33, 150, 243));
-            }
+            DragStarted?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// Raises the Dragging event.
+        /// </summary>
+        /// <param name="e">Event arguments</param>
+        protected virtual void OnDragging(TaskBarDragEventArgs e)
+        {
+            Dragging?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// Raises the DragCompleted event.
+        /// </summary>
+        /// <param name="e">Event arguments</param>
+        protected virtual void OnDragCompleted(TaskBarDragEventArgs e)
+        {
+            DragCompleted?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// Raises the ResizeStarted event.
+        /// </summary>
+        /// <param name="e">Event arguments</param>
+        protected virtual void OnResizeStarted(TaskBarResizeEventArgs e)
+        {
+            ResizeStarted?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// Raises the Resizing event.
+        /// </summary>
+        /// <param name="e">Event arguments</param>
+        protected virtual void OnResizing(TaskBarResizeEventArgs e)
+        {
+            Resizing?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// Raises the ResizeCompleted event.
+        /// </summary>
+        /// <param name="e">Event arguments</param>
+        protected virtual void OnResizeCompleted(TaskBarResizeEventArgs e)
+        {
+            ResizeCompleted?.Invoke(this, e);
         }
 
         #endregion
     }
 
-    #region Event Args Classes
+    #region Event Args
 
     /// <summary>
     /// Event arguments for task bar events.
     /// </summary>
     public class TaskBarEventArgs : EventArgs
     {
-        public GanttTaskBar TaskBar { get; }
-        public string Action { get; }
+        /// <summary>
+        /// Gets the position of the event.
+        /// </summary>
+        public Point Position { get; }
 
-        public TaskBarEventArgs(GanttTaskBar taskBar, string action)
+        /// <summary>
+        /// Initializes a new instance of the TaskBarEventArgs class.
+        /// </summary>
+        /// <param name="position">The position of the event.</param>
+        public TaskBarEventArgs(Point position)
         {
-            TaskBar = taskBar;
-            Action = action;
+            Position = position;
         }
     }
 
     /// <summary>
     /// Event arguments for task bar drag events.
     /// </summary>
-    public class TaskBarDragEventArgs : EventArgs
+    public class TaskBarDragEventArgs : TaskBarEventArgs
     {
-        public GanttTaskBar TaskBar { get; }
-        public Point Position { get; }
-
-        public TaskBarDragEventArgs(GanttTaskBar taskBar, Point position)
+        /// <summary>
+        /// Initializes a new instance of the TaskBarDragEventArgs class.
+        /// </summary>
+        /// <param name="position">The position of the event.</param>
+        public TaskBarDragEventArgs(Point position) : base(position)
         {
-            TaskBar = taskBar;
-            Position = position;
         }
     }
 
     /// <summary>
     /// Event arguments for task bar resize events.
     /// </summary>
-    public class TaskBarResizeEventArgs : EventArgs
+    public class TaskBarResizeEventArgs : TaskBarEventArgs
     {
-        public GanttTaskBar TaskBar { get; }
+        /// <summary>
+        /// Gets the resize direction.
+        /// </summary>
         public ResizeDirection Direction { get; }
-        public Point Position { get; }
 
-        public TaskBarResizeEventArgs(GanttTaskBar taskBar, ResizeDirection direction, Point position = default)
+        /// <summary>
+        /// Initializes a new instance of the TaskBarResizeEventArgs class.
+        /// </summary>
+        /// <param name="position">The position of the event.</param>
+        /// <param name="direction">The resize direction.</param>
+        public TaskBarResizeEventArgs(Point position, ResizeDirection direction) : base(position)
         {
-            TaskBar = taskBar;
             Direction = direction;
-            Position = position;
         }
-    }
-
-    /// <summary>
-    /// Enumeration for resize directions.
-    /// </summary>
-    public enum ResizeDirection
-    {
-        None,
-        Left,
-        Right
     }
 
     #endregion

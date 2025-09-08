@@ -1,6 +1,7 @@
 using System.Globalization;
 using GPM.Gantt.Models;
 using GPM.Gantt.Rendering;
+using GPM.Gantt.Services;
 
 namespace GPM.Gantt.Configuration
 {
@@ -93,6 +94,21 @@ namespace GPM.Gantt.Configuration
         /// Gets or sets the garbage collection mode.
         /// </summary>
         public GCMode GarbageCollectionMode { get; set; } = GCMode.Sustained;
+        
+        /// <summary>
+        /// Gets or sets the GPU rendering technology to use.
+        /// </summary>
+        public GpuRenderingTechnology GpuRenderingTechnology { get; set; } = GpuRenderingTechnology.Default;
+        
+        /// <summary>
+        /// Gets or sets whether to enable GPU acceleration for rendering.
+        /// </summary>
+        public bool EnableGpuAcceleration { get; set; } = false;
+        
+        /// <summary>
+        /// Gets or sets whether to enable batch rendering for improved performance.
+        /// </summary>
+        public bool EnableBatchRendering { get; set; } = true;
     }
     
     /// <summary>

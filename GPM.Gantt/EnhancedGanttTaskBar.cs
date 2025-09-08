@@ -140,19 +140,9 @@ namespace GPM.Gantt
                     IsHitTestVisible = true
                 };
 
-                // Replace the existing child with our canvas
-                if (Child != null)
-                {
-                    var existingChild = Child;
-                    Child = _shapeContainer;
-                    
-                    // Add the existing child to our canvas
-                    _shapeContainer.Children.Add(existingChild);
-                }
-                else
-                {
-                    Child = _shapeContainer;
-                }
+                // Add the container to our visual tree
+                AddVisualChild(_shapeContainer);
+                AddLogicalChild(_shapeContainer);
             }
         }
 
@@ -174,9 +164,10 @@ namespace GPM.Gantt
             if (UseLegacyRendering)
             {
                 // Remove shape container and revert to legacy rendering
-                if (_shapeContainer != null && Child == _shapeContainer)
+                if (_shapeContainer != null)
                 {
-                    Child = null;
+                    RemoveVisualChild(_shapeContainer);
+                    RemoveLogicalChild(_shapeContainer);
                     _shapeContainer = null;
                     _shapeElement = null;
                 }
@@ -190,9 +181,9 @@ namespace GPM.Gantt
                 _currentRenderer = TaskBarShapeRendererFactory.GetRenderer(Shape);
                 
                 var bounds = new Rect(0, 0, ActualWidth, ActualHeight);
-                var fill = Background ?? Brushes.LightBlue;
-                var stroke = BorderBrush ?? Brushes.Gray;
-                var strokeThickness = BorderThickness.Left;
+                var fill = Fill ?? Brushes.LightBlue;
+                var stroke = Stroke ?? Brushes.Gray;
+                var strokeThickness = StrokeThickness;
 
                 // Remove existing shape element
                 if (_shapeElement != null && _shapeContainer?.Children.Contains(_shapeElement) == true)

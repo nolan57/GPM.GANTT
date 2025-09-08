@@ -143,8 +143,6 @@
             <!-- Gantt Chart -->
             <gantt:GanttContainer x:Name="Gantt"
                                  Grid.Column="1"
-                                 StartTime="{Binding StartDate}"
-                                 EndTime="{Binding EndDate}"
                                  TimeUnit="Day"
                                  TaskCount="10"
                                  TaskRowHeight="30"

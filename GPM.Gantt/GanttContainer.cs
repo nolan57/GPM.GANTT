@@ -14,6 +14,12 @@ using GPM.Gantt.Utilities;
 using GPM.Gantt.Interaction;
 using GPM.Gantt.Rendering;
 using GPM.Gantt.Models.Calendar;
+using GPM.Gantt.Layout;
+using GPM.Gantt.TaskManagement;
+using GPM.Gantt.Dependency;
+using GPM.Gantt.Theme;
+using GPM.Gantt.Export;
+using GPM.Gantt.Template;
 
 namespace GPM.Gantt
 {
@@ -403,6 +409,7 @@ namespace GPM.Gantt
         private readonly IPerformanceService _performanceService = new PerformanceService();
         private readonly IVirtualizationService _virtualizationService = new VirtualizationService();
         private readonly ElementPool _elementPool = new();
+        private readonly IGpuRenderingService _gpuRenderingService; // 添加GPU渲染服务
         private bool _isLayoutInvalidated = true;
         private GanttTheme? _currentTheme;
         private List<DateTime>? _cachedTicks;
@@ -510,6 +517,9 @@ namespace GPM.Gantt
             {
                 Theme = ThemeManager.GetCurrentTheme();
             }
+            
+            // 初始化GPU渲染服务
+            _gpuRenderingService = InitializeGpuRenderingService();
             
             // Initialize tasks collection immediately with proper change tracking
             var tasksCollection = new ObservableCollection<GanttTask>();
@@ -869,113 +879,14 @@ namespace GPM.Gantt
 
         private void BuildStandardGrid(List<DateTime> ticks, int columns, int rows)
         {
-            // Other rows: grid rows or grid cells
-            for (int r = 1; r < rows; r++)
-            {
-                if (!ShowGridCells)
-                {
-                    var row = new GanttGridRow { RowIndex = r };
-                    SetRow(row, r);
-                    SetColumn(row, 0);
-                    SetColumnSpan(row, columns);
-                    Children.Add(row);
-                }
-                else
-                {
-                    for (int c = 0; c < columns; c++)
-                    {
-                        var dt = ticks[c];
-                        var cell = new GanttGridCell
-                        {
-                            RowIndex = r,
-                            TimeIndex = c,
-                            IsWeekend = TimelineCalculator.IsWeekend(dt),
-                            IsToday = TimelineCalculator.IsToday(dt)
-                        };
-                        SetRow(cell, r);
-                        SetColumn(cell, c);
-                        Children.Add(cell);
-                    }
-                }
-            }
+            GridLayoutManager.BuildFullGrid(this, ticks, rows, columns, ShowGridCells);
         }
 
         private void BuildTaskBars(List<DateTime> ticks, PerformanceLevel performanceLevel)
         {
-            // Ensure minimum viable layout even with no tasks
-            if (Tasks == null || Tasks.Count == 0)
-            {
-                System.Diagnostics.Debug.WriteLine("No tasks found, creating minimal layout for visual testing");
-                
-                // Add a simple visual indicator
-                var placeholder = new TextBlock
-                {
-                    Text = "Gantt Chart - No tasks to display",
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    FontSize = 16,
-                    Foreground = Brushes.Gray
-                };
-                SetRow(placeholder, Math.Max(1, RowDefinitions.Count / 2));
-                SetColumn(placeholder, 0);
-                SetColumnSpan(placeholder, ColumnDefinitions.Count);
-                Children.Add(placeholder);
-                return;
-            }
-
-            System.Diagnostics.Debug.WriteLine($"Processing {Tasks.Count} tasks");
-            
-            foreach (var task in Tasks)
-            {
-                if (task == null) continue;
-
-                System.Diagnostics.Debug.WriteLine($"Task: {task.Title}, Start: {task.Start}, End: {task.End}, RowIndex: {task.RowIndex}");
-
-                // Skip tasks completely outside the visible time range
-                if (task.End < StartTime || task.Start > EndTime)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Skipping task {task.Title} - outside time range");
-                    continue;
-                }
-                
-                // Decide row index with optional clamping behavior
-                int rowIndex;
-                if (ClampTasksToVisibleRows)
-                {
-                    // Clamp into visible range (1..TaskCount) when enabled
-                    rowIndex = Math.Max(1, Math.Min(TaskCount, task.RowIndex));
-                    System.Diagnostics.Debug.WriteLine($"Clamping task {task.Title} to row {rowIndex} within 1..{TaskCount}");
-                }
-                else
-                {
-                    // Skip out-of-range rows to avoid overlapping
-                    if (task.RowIndex < 1 || task.RowIndex > TaskCount)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Skipping task {task.Title} - row {task.RowIndex} is outside visible range 1..{TaskCount}");
-                        continue;
-                    }
-                    rowIndex = task.RowIndex;
-                }
-
-                // Calculate task span using timeline helper
-                var (startIndex, columnSpan) = TimelineHelper.CalculateTaskSpan(ticks, task.Start, task.End, TimeUnit);
-
-                System.Diagnostics.Debug.WriteLine($"Task {task.Title}: startIndex={startIndex}, columnSpan={columnSpan}, rowIndex={rowIndex}");
-
-                var taskBar = CreateTaskBarForTask(task, rowIndex, startIndex, columnSpan);
-
-                SetRow(taskBar, rowIndex);
-                SetColumn(taskBar, startIndex);
-                SetColumnSpan(taskBar, columnSpan);
-                Panel.SetZIndex(taskBar, 10); // Place above grid lines
-                Children.Add(taskBar);
-                
-                // Register with interaction manager after adding to visual tree
-                if (IsLoaded)
-                {
-                    _interactionManager.RegisterTaskBar(taskBar);
-                }
-            }
+            var renderingConfig = Configuration?.Rendering ?? new RenderingConfiguration();
+            TaskBarManager.BuildTaskBars(this, ticks, Tasks, TaskCount, ClampTasksToVisibleRows, performanceLevel, 
+                IsInteractionEnabled, IsDragDropEnabled, IsResizeEnabled, _elementPool, _interactionManager, IsLoaded, renderingConfig);
         }
 
         /// <summary>
@@ -1013,33 +924,6 @@ namespace GPM.Gantt
             taskBar.IsResizeEnabled = IsResizeEnabled;
             
             return taskBar;
-        }
-        
-        /// <summary>
-        /// Configures a task bar (from pool or newly created) with task data and shape settings.
-        /// </summary>
-        private void ConfigureTaskBar(GanttTaskBar taskBar, GanttTask task, int rowIndex, int startIndex, int columnSpan)
-        {
-            // Handle enhanced task bar with shape support
-            if (taskBar is EnhancedGanttTaskBar enhancedTaskBar && 
-                Configuration?.Rendering?.UseEnhancedShapeRendering == true && 
-                task.Shape != TaskBarShape.Rectangle)
-            {
-                enhancedTaskBar.Shape = task.Shape;
-                enhancedTaskBar.ShapeParameters = task.ShapeParameters ?? Configuration.Rendering.DefaultShapeParameters;
-                enhancedTaskBar.UseLegacyRendering = false;
-            }
-            
-            // Configure common properties
-            taskBar.RowIndex = rowIndex;
-            taskBar.TimeIndex = startIndex;
-            taskBar.CustomText = task.Title;
-            taskBar.IsInteractive = IsInteractionEnabled;
-            taskBar.Progress = task.Progress;
-            taskBar.Priority = task.Priority;
-            taskBar.Status = task.Status;
-            taskBar.IsDragDropEnabled = IsDragDropEnabled;
-            taskBar.IsResizeEnabled = IsResizeEnabled;
         }
 
         private void OnTaskMoved(TaskMovedEventArgs e)
@@ -1244,24 +1128,7 @@ namespace GPM.Gantt
         /// </summary>
         private void BuildTimeHeaders(List<DateTime> ticks, int columns, PerformanceLevel performanceLevel)
         {
-            using var measurement = _performanceService.BeginMeasurement("TimeHeadersBuild");
-            
-            for (int c = 0; c < columns; c++)
-            {
-                var dt = ticks[c];
-                var timeCell = _elementPool.GetOrCreateTimeCell();
-                
-                timeCell.TimeIndex = c;
-                timeCell.RowIndex = 0;
-                timeCell.TimeText = TimelineCalculator.FormatTick(dt, TimeUnit, DateFormat, TimeFormat, Culture);
-                timeCell.IsWeekend = TimelineCalculator.IsWeekend(dt);
-                timeCell.IsToday = TimelineCalculator.IsToday(dt);
-                
-                SetRow(timeCell, 0);
-                SetColumn(timeCell, c);
-                Children.Add(timeCell);
-                _visibleElements.Add(timeCell);
-            }
+            TimeScaleManager.BuildTimeHeaders(this, ticks, columns, performanceLevel, _elementPool, _visibleElements);
         }
         
         /// <summary>
@@ -1269,40 +1136,7 @@ namespace GPM.Gantt
         /// </summary>
         private void BuildVirtualizedGrid(List<DateTime> ticks, int columns, (int startRow, int endRow) visibleRange, PerformanceLevel performanceLevel)
         {
-            using var measurement = _performanceService.BeginMeasurement("VirtualizedGridBuild");
-            
-            var (startRow, endRow) = visibleRange;
-            
-            for (int r = startRow; r <= endRow; r++)
-            {
-                if (!ShowGridCells)
-                {
-                    var row = _elementPool.GetOrCreateGridRow();
-                    row.RowIndex = r;
-                    SetRow(row, r);
-                    SetColumn(row, 0);
-                    SetColumnSpan(row, columns);
-                    Children.Add(row);
-                    _visibleElements.Add(row);
-                }
-                else
-                {
-                    for (int c = 0; c < columns; c++)
-                    {
-                        var dt = ticks[c];
-                        var cell = _elementPool.GetOrCreateGridCell();
-                        cell.RowIndex = r;
-                        cell.TimeIndex = c;
-                        cell.IsWeekend = TimelineCalculator.IsWeekend(dt);
-                        cell.IsToday = TimelineCalculator.IsToday(dt);
-                        
-                        SetRow(cell, r);
-                        SetColumn(cell, c);
-                        Children.Add(cell);
-                        _visibleElements.Add(cell);
-                    }
-                }
-            }
+            GridLayoutManager.BuildVirtualizedGrid(this, ticks, columns, visibleRange, ShowGridCells, _elementPool, _visibleElements, _performanceService);
         }
         
         /// <summary>
@@ -1310,43 +1144,9 @@ namespace GPM.Gantt
         /// </summary>
         private void BuildVirtualizedTaskBars(List<DateTime> ticks, (int startRow, int endRow) visibleRange, PerformanceLevel performanceLevel)
         {
-            using var measurement = _performanceService.BeginMeasurement("VirtualizedTaskBarsBuild");
-            
-            if (Tasks == null || Tasks.Count == 0)
-                return;
-            
-            var (startRow, endRow) = visibleRange;
-            
-            // Filter tasks within visible range
-            var visibleTasks = Tasks.Where(task => 
-                task != null &&
-                task.RowIndex >= startRow && 
-                task.RowIndex <= endRow &&
-                task.End >= StartTime && 
-                task.Start <= EndTime
-            ).ToList();
-            
-            foreach (var task in visibleTasks)
-            {
-                var (startIndex, columnSpan) = TimelineHelper.CalculateTaskSpan(ticks, task.Start, task.End, TimeUnit);
-                
-                var taskBar = _elementPool.GetOrCreateTaskBar();
-                
-                // Configure task bar using our factory method logic
-                ConfigureTaskBar(taskBar, task, task.RowIndex, startIndex, columnSpan);
-                
-                SetRow(taskBar, task.RowIndex);
-                SetColumn(taskBar, startIndex);
-                SetColumnSpan(taskBar, columnSpan);
-                Panel.SetZIndex(taskBar, 10);
-                Children.Add(taskBar);
-                _visibleElements.Add(taskBar);
-                
-                if (IsLoaded)
-                {
-                    _interactionManager.RegisterTaskBar(taskBar);
-                }
-            }
+            var renderingConfig = Configuration?.Rendering ?? new RenderingConfiguration();
+            TaskBarManager.BuildVirtualizedTaskBars(this, ticks, Tasks, visibleRange, performanceLevel, 
+                IsInteractionEnabled, IsDragDropEnabled, IsResizeEnabled, _elementPool, _interactionManager, IsLoaded, renderingConfig, _performanceService);
         }
         
         /// <summary>
@@ -1375,28 +1175,7 @@ namespace GPM.Gantt
         /// </summary>
         private void ApplyThemeToChildren()
         {
-            if (_currentTheme == null) return;
-            
-            foreach (UIElement child in Children)
-            {
-                // Apply theme resources to child elements based on their type
-                if (child is GanttTaskBar taskBar)
-                {
-                    ApplyThemeToTaskBar(taskBar);
-                }
-                else if (child is GanttTimeCell timeCell)
-                {
-                    ApplyThemeToTimeCell(timeCell);
-                }
-                else if (child is GanttGridCell gridCell)
-                {
-                    ApplyThemeToGridCell(gridCell);
-                }
-                else if (child is GanttGridRow gridRow)
-                {
-                    ApplyThemeToGridRow(gridRow);
-                }
-            }
+            ThemeApplier.ApplyThemeToChildren(this, _currentTheme);
         }
         
         /// <summary>
@@ -1501,37 +1280,7 @@ namespace GPM.Gantt
         /// </summary>
         private void RefreshDependencyLines()
         {
-            if (!ShowDependencyLines || Dependencies == null || !Dependencies.Any())
-                return;
-                
-            // Remove existing dependency lines
-            var dependencyElements = Children.OfType<FrameworkElement>()
-                .Where(e => e.Tag?.ToString() == "DependencyLine")
-                .ToList();
-                
-            foreach (var element in dependencyElements)
-            {
-                Children.Remove(element);
-            }
-            
-            // Create task position map
-            var taskPositions = CalculateTaskPositions();
-            
-            // Create dependency lines
-            var dependencyLines = CreateDependencyLines(taskPositions);
-            var renderer = new DependencyLineRenderer();
-            var lineElements = renderer.RenderDependencyLines(dependencyLines, taskPositions);
-            
-            // Add dependency line elements to the container
-            foreach (var element in lineElements)
-            {
-                if (element is FrameworkElement fe)
-                {
-                    fe.Tag = "DependencyLine";
-                    fe.IsHitTestVisible = false; // Allow click-through
-                }
-                Children.Add(element);
-            }
+            DependencyManager.RefreshDependencyLines(this, ShowDependencyLines, Dependencies, Tasks, HighlightCriticalPath);
         }
         
         /// <summary>
@@ -1619,27 +1368,41 @@ namespace GPM.Gantt
         /// </summary>
         public async System.Threading.Tasks.Task<bool> ExportAsync(string filePath, ExportOptions options)
         {
-            if (ExportService == null)
-            {
-                System.Diagnostics.Debug.WriteLine("Export service not configured");
-                return false;
-            }
-            
-            return await ExportService.ExportGanttChartAsync(this, filePath, options);
+            return await ExportManager.ExportAsync(ExportService, this, filePath, options);
         }
         
         /// <summary>
         /// Applies a project template using the configured template service
         /// </summary>
-        public async System.Threading.Tasks.Task<List<GanttTask>> ApplyTemplateAsync(string templateId, TemplateApplicationOptions options)
+        public async System.Threading.Tasks.Task<List<GanttTask>> ApplyTemplateAsync(string templateId, Models.Templates.TemplateApplicationOptions options)
         {
-            if (TemplateService == null)
+            return await TemplateManager.ApplyTemplateAsync(TemplateService, templateId, options);
+        }
+        
+        /// <summary>
+        /// 初始化GPU渲染服务
+        /// </summary>
+        /// <returns>GPU渲染服务实例</returns>
+        private IGpuRenderingService InitializeGpuRenderingService()
+        {
+            try
             {
-                System.Diagnostics.Debug.WriteLine("Template service not configured");
-                return new List<GanttTask>();
+                // 从配置中获取渲染技术
+                var technology = Configuration?.Rendering?.GpuRenderingTechnology ?? GpuRenderingTechnology.Default;
+                var enableGpu = Configuration?.Rendering?.EnableGpuAcceleration ?? false;
+                
+                if (enableGpu)
+                {
+                    return GpuRenderingServiceFactory.CreateService(technology);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GPU渲染服务初始化失败: {ex.Message}");
             }
             
-            return await TemplateService.ApplyTemplateAsync(templateId, options);
+            // 回退到默认渲染服务
+            return GpuRenderingServiceFactory.CreateService(GpuRenderingTechnology.Default);
         }
         
         #endregion
