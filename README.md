@@ -22,6 +22,7 @@ A modern, enterprise-grade WPF Gantt chart component library designed for high-p
 - **Performance Monitoring**: Real-time performance diagnostics and optimization recommendations
 - **Element Pooling**: Reusable UI elements for improved rendering performance
 - **Async Operations**: Non-blocking async service layer for data operations
+- **GPU Rendering**: Hardware-accelerated rendering with Direct2D, DirectX, OpenGL, and Vulkan support
 
 ### Advanced Features
 - **Plugin-Based Annotation System**: Extensible annotation framework with text, shape, and line plugins
@@ -143,6 +144,7 @@ public class ProjectViewModel : ViewModelBase
 - [**Custom Shapes Guide**](CUSTOM_SHAPES_GUIDE.md) - Complete guide to custom task bar shapes
 - [**Theme Management**](THEME_MANAGEMENT_GUIDE.md) - Comprehensive theming system documentation
 - [**Date/Time Formatting**](Date_Time_Format_Implementation.md) - Custom date and time format implementation
+- [**Framework API Reference**](GPM_GANTT_FRAMEWORK_UPDATED_DOCUMENTATION.md) - Updated framework documentation
 
 ### API & Development
 - [**API Reference**](docs/api-reference.md) - Detailed API documentation
@@ -198,7 +200,9 @@ var config = new GanttConfiguration
         EnableVirtualization = true,
         MaxVisibleTasks = 1000,
         EnableAutoMemoryOptimization = true,
-        PerformanceLevel = PerformanceLevel.Performance
+        PerformanceLevel = PerformanceLevel.Performance,
+        EnableGpuAcceleration = true,
+        GpuRenderingTechnology = GpuRenderingTechnology.Direct2D
     }
 };
 ganttChart.Configuration = config;
@@ -296,6 +300,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - ✅ Plugin-based annotation system with text, shape, and line annotations
 - ✅ Expandable time axis segments for detailed time period exploration
 - ✅ Multi-level time scale display with intelligent visibility management
+- ✅ GPU rendering support with multiple technologies
 
 ### Recent Improvements (v2.0.1)
 - ✅ Fixed BorderThickness theme resource conversion bug

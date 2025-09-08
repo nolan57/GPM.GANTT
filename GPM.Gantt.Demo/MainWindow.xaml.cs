@@ -230,6 +230,15 @@ namespace GPM.Gantt.Demo
             Gantt.Tasks = new ObservableCollection<GanttTask>(tasks);
             Gantt.StartTime = today;
             Gantt.EndTime = endDate;
+            
+            // Ensure the Gantt chart is properly configured
+            Gantt.TaskCount = Math.Max(Gantt.TaskCount, tasks.Length);
+            Gantt.TimeUnit = TimeUnit.Day;
+            Gantt.ShowGridCells = true;
+            
+            // Force a layout update
+            Gantt.InvalidateVisual();
+            Gantt.UpdateLayout();
         }
 
         private void RunAlternatingRowDemo(object sender, RoutedEventArgs e)

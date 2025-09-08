@@ -145,16 +145,17 @@
                                  Grid.Column="1"
                                  TimeUnit="Day"
                                  TaskCount="10"
-                                 TaskRowHeight="30"
-                                 ShowGridCells="False"/>
+                                 TaskRowHeight="30" HeaderRowHeight="30"
+                                 ShowGridCells="True"
+                                 MinWidth="400" MinHeight="300"/>
             
             <!-- Status Bar -->
-            <StatusBar DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+            <!-- <StatusBar DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                 <StatusBarItem Content="{Binding ElementName=ThemeComboBox, Path=SelectedItem.Content, StringFormat='Theme: {0}'}"/>
                 <StatusBarItem Content="{Binding ElementName=RowColorComboBox, Path=SelectedItem.Tag, StringFormat='Row Color: {0}'}"/>
                 <StatusBarItem Content="{Binding ElementName=PrimaryColorComboBox, Path=SelectedItem.Tag, StringFormat='Primary Color: {0}'}"/>
                 <StatusBarItem Content="{Binding ElementName=AccentColorComboBox, Path=SelectedItem.Tag, StringFormat='Accent Color: {0}'}"/>
-            </StatusBar>
+            </StatusBar> -->
         </Grid>
     </DockPanel>
 </Window>

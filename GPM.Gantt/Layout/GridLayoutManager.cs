@@ -26,7 +26,19 @@ namespace GPM.Gantt.Layout
             // Create row definitions
             for (int i = 0; i < rows; i++)
             {
-                container.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                // Use the container's row height settings if available, otherwise use a default height
+                GridLength rowHeight;
+                if (container is GanttContainer ganttContainer)
+                {
+                    rowHeight = (i == 0) ? ganttContainer.HeaderRowHeight : ganttContainer.TaskRowHeight;
+                }
+                else
+                {
+                    // Default heights if not a GanttContainer
+                    rowHeight = (i == 0) ? new GridLength(30) : new GridLength(30);
+                }
+                
+                container.RowDefinitions.Add(new RowDefinition { Height = rowHeight });
             }
             
             // Create column definitions

@@ -84,6 +84,13 @@ namespace GPM.Gantt.TaskManagement
                 Panel.SetZIndex(taskBar, 10); // Place above grid lines
                 container.Children.Add(taskBar);
                 
+                // Make sure the task bar is properly configured with visual properties
+                if (container is GanttContainer ganttContainer && ganttContainer.Theme != null)
+                {
+                    // Apply theme to the specific task bar
+                    Theme.ThemeApplier.ApplyThemeToTaskBar(taskBar, ganttContainer.Theme);
+                }
+                
                 // Register with interaction manager after adding to visual tree
                 if (isLoaded)
                 {
@@ -199,6 +206,9 @@ namespace GPM.Gantt.TaskManagement
             taskBar.Status = task.Status;
             taskBar.IsDragDropEnabled = isDragDropEnabled;
             taskBar.IsResizeEnabled = isResizeEnabled;
+            
+            // Ensure the task bar is visible by setting proper Z-index
+            Panel.SetZIndex(taskBar, 10);
         }
     }
 }

@@ -17,17 +17,20 @@ namespace GPM.Gantt.Theme
         {
             foreach (UIElement child in container.Children)
             {
-                if (child is GanttTimeCell timeCell)
+                switch (child)
                 {
-                    ApplyThemeToTimeCell(timeCell, currentTheme);
-                }
-                else if (child is GanttGridCell gridCell)
-                {
-                    ApplyThemeToGridCell(gridCell, currentTheme);
-                }
-                else if (child is GanttGridRow gridRow)
-                {
-                    ApplyThemeToGridRow(gridRow, currentTheme);
+                    case GanttTimeCell timeCell:
+                        ApplyThemeToTimeCell(timeCell, currentTheme);
+                        break;
+                    case GanttGridCell gridCell:
+                        ApplyThemeToGridCell(gridCell, currentTheme);
+                        break;
+                    case GanttGridRow gridRow:
+                        ApplyThemeToGridRow(gridRow, currentTheme);
+                        break;
+                    case GanttTaskBar taskBar:
+                        ApplyThemeToTaskBar(taskBar, currentTheme);
+                        break;
                 }
             }
         }
@@ -35,7 +38,7 @@ namespace GPM.Gantt.Theme
         /// <summary>
         /// Applies theme styling to a task bar.
         /// </summary>
-        private static void ApplyThemeToTaskBar(GanttTaskBar taskBar, GanttTheme currentTheme)
+        public static void ApplyThemeToTaskBar(GanttTaskBar taskBar, GanttTheme currentTheme)
         {
             try
             {
@@ -50,17 +53,26 @@ namespace GPM.Gantt.Theme
                 };
                 
                 taskBar.Background = backgroundBrush;
+                taskBar.Fill = backgroundBrush; // Make sure Fill is also set
                 taskBar.BorderBrush = new SolidColorBrush(currentTheme.Task.BorderColor);
                 taskBar.BorderThickness = new Thickness(currentTheme.Task.BorderThickness);
-                // CornerRadius would need to be handled differently as Border.CornerRadius is not a dependency property
+                taskBar.Stroke = new SolidColorBrush(currentTheme.Task.BorderColor); // Make sure Stroke is also set
+                taskBar.StrokeThickness = currentTheme.Task.BorderThickness; // Make sure StrokeThickness is also set
+                
+                // Set corner radius if supported
+                // Note: Directly setting CornerRadius on GanttTaskBar may not work as it's a FrameworkElement
+                // We might need to handle this differently depending on the actual implementation
             }
-            catch { /* Silently ignore if resources not available */ }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error applying theme to task bar: {ex.Message}");
+            }
         }
         
         /// <summary>
         /// Applies theme styling to a time cell.
         /// </summary>
-        private static void ApplyThemeToTimeCell(GanttTimeCell timeCell, GanttTheme currentTheme)
+        public static void ApplyThemeToTimeCell(GanttTimeCell timeCell, GanttTheme currentTheme)
         {
             try
             {
@@ -77,13 +89,16 @@ namespace GPM.Gantt.Theme
                     textBlock.FontWeight = currentTheme.TimeScale.FontWeight;
                 }
             }
-            catch { /* Silently ignore if resources not available */ }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error applying theme to time cell: {ex.Message}");
+            }
         }
         
         /// <summary>
         /// Applies theme styling to a grid cell.
         /// </summary>
-        private static void ApplyThemeToGridCell(GanttGridCell gridCell, GanttTheme currentTheme)
+        public static void ApplyThemeToGridCell(GanttGridCell gridCell, GanttTheme currentTheme)
         {
             try
             {
@@ -103,13 +118,16 @@ namespace GPM.Gantt.Theme
                 gridCell.BorderBrush = new SolidColorBrush(currentTheme.Grid.LineColor);
                 gridCell.BorderThickness = new Thickness(currentTheme.Grid.LineThickness);
             }
-            catch { /* Silently ignore if resources not available */ }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error applying theme to grid cell: {ex.Message}");
+            }
         }
         
         /// <summary>
         /// Applies theme styling to a grid row.
         /// </summary>
-        private static void ApplyThemeToGridRow(GanttGridRow gridRow, GanttTheme currentTheme)
+        public static void ApplyThemeToGridRow(GanttGridRow gridRow, GanttTheme currentTheme)
         {
             try
             {
@@ -117,7 +135,10 @@ namespace GPM.Gantt.Theme
                 gridRow.BorderBrush = new SolidColorBrush(currentTheme.Grid.LineColor);
                 gridRow.BorderThickness = new Thickness(currentTheme.Grid.LineThickness);
             }
-            catch { /* Silently ignore if resources not available */ }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error applying theme to grid row: {ex.Message}");
+            }
         }
     }
 }

@@ -13,7 +13,8 @@ Comprehensive API documentation for the GPM.Gantt WPF component library.
 7. [Templates](#templates)
 8. [Calendar System](#calendar-system)
 9. [Utilities](#utilities)
-10. [Examples](#examples)
+10. [GPU Rendering](#gpu-rendering)
+11. [Examples](#examples)
 
 ## Core Models
 
@@ -757,6 +758,205 @@ public class TaskTemplate
 }
 ```
 
+## GPU Rendering
+
+### GpuRenderingTechnology
+
+Enumeration of supported GPU rendering technologies.
+
+```csharp
+public enum GpuRenderingTechnology
+{
+    Default,    // Default WPF rendering (software rendering)
+    Direct2D,   // Direct2D rendering
+    DirectX,    // DirectX rendering
+    OpenGL,     // OpenGL rendering
+    Vulkan      // Vulkan rendering
+}
+```
+
+### IGpuRenderingService
+
+Interface for GPU rendering services.
+
+```csharp
+public interface IGpuRenderingService
+{
+    /// <summary>
+    /// Gets the rendering technology type
+    /// </summary>
+    GpuRenderingTechnology Technology { get; }
+    
+    /// <summary>
+    /// Initialize the rendering service
+    /// </summary>
+    /// <returns>Whether initialization was successful</returns>
+    bool Initialize();
+    
+    /// <summary>
+    /// Render a rectangular shape
+    /// </summary>
+    /// <param name="drawingContext">Drawing context</param>
+    /// <param name="bounds">Boundary rectangle</param>
+    /// <param name="fillBrush">Fill brush</param>
+    /// <param name="borderBrush">Border brush</param>
+    /// <param name="borderThickness">Border thickness</param>
+    /// <param name="cornerRadius">Corner radius</param>
+    void RenderRectangle(
+        DrawingContext drawingContext, 
+        Rect bounds, 
+        Brush fillBrush, 
+        Brush borderBrush, 
+        double borderThickness,
+        double cornerRadius = 0);
+    
+    /// <summary>
+    /// Render a line
+    /// </summary>
+    /// <param name="drawingContext">Drawing context</param>
+    /// <param name="startPoint">Start point</param>
+    /// <param name="endPoint">End point</param>
+    /// <param name="strokeBrush">Line brush</param>
+    /// <param name="strokeThickness">Line thickness</param>
+    void RenderLine(
+        DrawingContext drawingContext,
+        Point startPoint,
+        Point endPoint,
+        Brush strokeBrush,
+        double strokeThickness);
+    
+    /// <summary>
+    /// Render text
+    /// </summary>
+    /// <param name="drawingContext">Drawing context</param>
+    /// <param name="text">Text content</param>
+    /// <param name="fontFamily">Font family</param>
+    /// <param name="fontSize">Font size</param>
+    /// <param name="foreground">Foreground color</param>
+    /// <param name="origin">Text starting position</param>
+    void RenderText(
+        DrawingContext drawingContext,
+        string text,
+        FontFamily fontFamily,
+        double fontSize,
+        Brush foreground,
+        Point origin);
+    
+    /// <summary>
+    /// Render complex path
+    /// </summary>
+    /// <param name="drawingContext">Drawing context</param>
+    /// <param name="geometry">Geometric path</param>
+    /// <param name="fillBrush">Fill brush</param>
+    /// <param name="strokeBrush">Border brush</param>
+    /// <param name="strokeThickness">Border thickness</param>
+    void RenderGeometry(
+        DrawingContext drawingContext,
+        Geometry geometry,
+        Brush fillBrush,
+        Brush strokeBrush,
+        double strokeThickness);
+    
+    /// <summary>
+    /// Begin batch rendering operation
+    /// </summary>
+    void BeginBatchRender();
+    
+    /// <summary>
+    /// End batch rendering operation
+    /// </summary>
+    void EndBatchRender();
+    
+    /// <summary>
+    /// Release resources
+    /// </summary>
+    void Dispose();
+    
+    /// <summary>
+    /// Get rendering performance metrics
+    /// </summary>
+    /// <returns>Performance metrics</returns>
+    GpuRenderingMetrics GetPerformanceMetrics();
+}
+
+/// <summary>
+/// GPU rendering performance metrics
+/// </summary>
+public class GpuRenderingMetrics
+{
+    /// <summary>
+    /// Number of rendered elements
+    /// </summary>
+    public int RenderedElements { get; set; }
+    
+    /// <summary>
+    /// Rendering time (milliseconds)
+    /// </summary>
+    public double RenderTimeMs { get; set; }
+    
+    /// <summary>
+    /// GPU memory usage (bytes)
+    /// </summary>
+    public long GpuMemoryUsage { get; set; }
+    
+    /// <summary>
+    /// Frame rate
+    /// </summary>
+    public double Fps { get; set; }
+}
+```
+
+### GpuRenderingServiceFactory
+
+Factory for creating GPU rendering services.
+
+```csharp
+public static class GpuRenderingServiceFactory
+{
+    /// <summary>
+    /// Create a rendering service for the specified technology
+    /// </summary>
+    /// <param name="technology">Rendering technology</param>
+    /// <returns>Rendering service instance</returns>
+    public static IGpuRenderingService CreateService(GpuRenderingTechnology technology);
+    
+    /// <summary>
+    /// Register a new rendering service implementation
+    /// </summary>
+    /// <param name="technology">Rendering technology</param>
+    /// <param name="factory">Service factory function</param>
+    public static void RegisterService(GpuRenderingTechnology technology, Func<IGpuRenderingService> factory);
+    
+    /// <summary>
+    /// Get all supported rendering technologies
+    /// </summary>
+    /// <returns>Array of supported rendering technologies</returns>
+    public static GpuRenderingTechnology[] GetSupportedTechnologies();
+    
+    /// <summary>
+    /// Clear all cached service instances
+    /// </summary>
+    public static void ClearCache();
+}
+```
+
+### Configuration
+
+GPU rendering can be configured through the RenderingConfiguration:
+
+```csharp
+var config = new GanttConfiguration
+{
+    Rendering = new RenderingConfiguration
+    {
+        EnableGpuAcceleration = true,
+        GpuRenderingTechnology = GpuRenderingTechnology.Direct2D,
+        EnableBatchRendering = true
+    }
+};
+ganttContainer.Configuration = config;
+```
+
 ## Examples
 
 ### Creating a Project with Dependencies
@@ -968,6 +1168,7 @@ catch (InvalidOperationException ex)
 - **Dependency Calculation**: Critical path calculation is O(V + E) complexity
 - **Export Operations**: Run export operations on background threads
 - **Calendar Calculations**: Working time calculations are cached for performance
+- **GPU Rendering**: Enable for improved rendering performance on supported hardware
 
 ## Thread Safety
 

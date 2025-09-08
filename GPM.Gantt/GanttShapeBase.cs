@@ -175,21 +175,6 @@ namespace GPM.Gantt
         /// <param name="drawingContext">Drawing context</param>
         protected override void OnRender(DrawingContext drawingContext)
         {
-            // Draw background first
-            if (Background != null && !Background.Equals(Brushes.Transparent))
-            {
-                var backgroundBounds = new Rect(0, 0, ActualWidth, ActualHeight);
-                drawingContext.DrawRectangle(Background, null, backgroundBounds);
-            }
-            
-            // Draw border if border properties are set
-            if (BorderBrush != null && !BorderBrush.Equals(Brushes.Transparent) && BorderThickness != new Thickness(0))
-            {
-                var borderBounds = new Rect(0, 0, ActualWidth, ActualHeight);
-                var pen = new Pen(BorderBrush, Math.Max(BorderThickness.Left, Math.Max(BorderThickness.Top, Math.Max(BorderThickness.Right, BorderThickness.Bottom))));
-                drawingContext.DrawRectangle(null, pen, borderBounds);
-            }
-            
             if (EnableGpuRendering && InitializeGpuRendering())
             {
                 // Use GPU rendering
@@ -260,32 +245,48 @@ namespace GPM.Gantt
         {
             var bounds = new Rect(0, 0, ActualWidth, ActualHeight);
             
-            if (CornerRadius > 0)
+            // Draw background first
+            if (Background != null && !Background.Equals(Brushes.Transparent))
             {
-                // Use rounded rectangle
-                var geometry = new RectangleGeometry(bounds, CornerRadius, CornerRadius);
-                if (Fill != null)
+                drawingContext.DrawRectangle(Background, null, bounds);
+            }
+            
+            // Draw border if border properties are set
+            if (BorderBrush != null && !BorderBrush.Equals(Brushes.Transparent) && BorderThickness != new Thickness(0))
+            {
+                var pen = new Pen(BorderBrush, Math.Max(BorderThickness.Left, Math.Max(BorderThickness.Top, Math.Max(BorderThickness.Right, BorderThickness.Bottom))));
+                drawingContext.DrawRectangle(null, pen, bounds);
+            }
+            
+            // Draw fill if specified
+            if (Fill != null && !Fill.Equals(Brushes.Transparent))
+            {
+                if (CornerRadius > 0)
                 {
+                    // Use rounded rectangle
+                    var geometry = new RectangleGeometry(bounds, CornerRadius, CornerRadius);
                     drawingContext.DrawGeometry(Fill, null, geometry);
                 }
-                
-                if (Stroke != null && StrokeThickness > 0)
+                else
                 {
-                    var pen = new Pen(Stroke, StrokeThickness);
-                    drawingContext.DrawGeometry(null, pen, geometry);
-                }
-            }
-            else
-            {
-                // Use regular rectangle
-                if (Fill != null)
-                {
+                    // Use regular rectangle
                     drawingContext.DrawRectangle(Fill, null, bounds);
                 }
-                
-                if (Stroke != null && StrokeThickness > 0)
+            }
+            
+            // Draw stroke if specified
+            if (Stroke != null && StrokeThickness > 0)
+            {
+                var pen = new Pen(Stroke, StrokeThickness);
+                if (CornerRadius > 0)
                 {
-                    var pen = new Pen(Stroke, StrokeThickness);
+                    // Use rounded rectangle
+                    var geometry = new RectangleGeometry(bounds, CornerRadius, CornerRadius);
+                    drawingContext.DrawGeometry(null, pen, geometry);
+                }
+                else
+                {
+                    // Use regular rectangle
                     drawingContext.DrawRectangle(null, pen, bounds);
                 }
             }

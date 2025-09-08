@@ -770,11 +770,15 @@ namespace GPM.Gantt
                 for (int c = 0; c < columns; c++)
                     ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-                // Create row definitions
-                
+                // Create row definitions with proper heights
                 for (int r = 0; r < rows; r++)
                 {
                     var height = (r == 0) ? HeaderRowHeight : TaskRowHeight;
+                    // Ensure we have a minimum height to make elements visible
+                    if (height.GridUnitType == GridUnitType.Auto || (height.GridUnitType == GridUnitType.Pixel && height.Value <= 0))
+                    {
+                        height = new GridLength(30); // Default height of 30 pixels
+                    }
                     RowDefinitions.Add(new RowDefinition { Height = height });
                 }
 
@@ -791,6 +795,12 @@ namespace GPM.Gantt
                 _isLayoutInvalidated = false;
                 LogState("BuildLayoutImmediate end -> cleared invalidated");
                 System.Diagnostics.Debug.WriteLine($"Layout complete: {Children.Count} total children added");
+                
+                // Make sure theme is applied to all children
+                if (_currentTheme != null)
+                {
+                    ApplyThemeToChildren();
+                }
                 
                 // Optimize memory if auto-optimization is enabled
                 if (renderingConfig.EnableAutoMemoryOptimization)
