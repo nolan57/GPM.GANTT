@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using GPM.Gantt.Models;
 using GPM.Gantt.Utilities;
 using System;
@@ -9,10 +9,9 @@ namespace GPM.Gantt.Tests
     /// <summary>
     /// Unit tests for the TimelineHelper utility class.
     /// </summary>
-    [TestClass]
     public class TimelineHelperTests
     {
-        [TestMethod]
+        [Fact]
         public void CalculateOptimalTimeUnit_ShortDuration_ReturnsHour()
         {
             // Arrange
@@ -23,10 +22,10 @@ namespace GPM.Gantt.Tests
             var optimal = TimelineHelper.CalculateOptimalTimeUnit(start, end, 10);
             
             // Assert
-            Assert.AreEqual(TimeUnit.Hour, optimal);
+            Assert.Equal(TimeUnit.Hour, optimal);
         }
         
-        [TestMethod]
+        [Fact]
         public void CalculateOptimalTimeUnit_MediumDuration_ReturnsDay()
         {
             // Arrange
@@ -37,10 +36,10 @@ namespace GPM.Gantt.Tests
             var optimal = TimelineHelper.CalculateOptimalTimeUnit(start, end, 25);
             
             // Assert
-            Assert.AreEqual(TimeUnit.Day, optimal);
+            Assert.Equal(TimeUnit.Day, optimal);
         }
         
-        [TestMethod]
+        [Fact]
         public void CalculateOptimalTimeUnit_LongDuration_ReturnsMonth()
         {
             // Arrange
@@ -51,10 +50,10 @@ namespace GPM.Gantt.Tests
             var optimal = TimelineHelper.CalculateOptimalTimeUnit(start, end, 15);
             
             // Assert
-            Assert.AreEqual(TimeUnit.Month, optimal);
+            Assert.Equal(TimeUnit.Month, optimal);
         }
         
-        [TestMethod]
+        [Fact]
         public void FindTickIndex_ExactMatch_ReturnsCorrectIndex()
         {
             // Arrange
@@ -71,10 +70,10 @@ namespace GPM.Gantt.Tests
             var index = TimelineHelper.FindTickIndex(ticks, target, false);
             
             // Assert
-            Assert.AreEqual(2, index);
+            Assert.Equal(2, index);
         }
         
-        [TestMethod]
+        [Fact]
         public void FindTickIndex_NoExactMatch_ReturnsClosestLowerIndex()
         {
             // Arrange
@@ -91,10 +90,10 @@ namespace GPM.Gantt.Tests
             var index = TimelineHelper.FindTickIndex(ticks, target, false);
             
             // Assert
-            Assert.AreEqual(1, index); // Should return index of Jan 3rd
+            Assert.Equal(1, index); // Should return index of Jan 3rd
         }
         
-        [TestMethod]
+        [Fact]
         public void CalculateTaskSpan_TaskSpansMultipleTicks_ReturnsCorrectSpan()
         {
             // Arrange
@@ -113,13 +112,13 @@ namespace GPM.Gantt.Tests
             var (startIndex, columnSpan) = TimelineHelper.CalculateTaskSpan(ticks, taskStart, taskEnd, TimeUnit.Day);
             
             // Assert
-            Assert.AreEqual(1, startIndex); // Jan 2nd
+            Assert.Equal(1, startIndex); // Jan 2nd
             // The task spans from Jan 2nd to Jan 4th, and since the end time is after midnight of Jan 4th,
             // it should extend to include Jan 5th, so span should be 4 (Jan 2nd, 3rd, 4th, 5th)
-            Assert.AreEqual(4, columnSpan);
+            Assert.Equal(4, columnSpan);
         }
         
-        [TestMethod]
+        [Fact]
         public void ValidateTimeRange_ValidRange_ReturnsTrue()
         {
             // Arrange
@@ -130,11 +129,11 @@ namespace GPM.Gantt.Tests
             var (isValid, message) = TimelineHelper.ValidateTimeRange(start, end, TimeUnit.Day);
             
             // Assert
-            Assert.IsTrue(isValid);
-            Assert.AreEqual("Valid time range", message);
+            Assert.True(isValid);
+            Assert.Equal("Valid time range", message);
         }
         
-        [TestMethod]
+        [Fact]
         public void ValidateTimeRange_StartAfterEnd_ReturnsFalse()
         {
             // Arrange
@@ -145,11 +144,11 @@ namespace GPM.Gantt.Tests
             var (isValid, message) = TimelineHelper.ValidateTimeRange(start, end, TimeUnit.Day);
             
             // Assert
-            Assert.IsFalse(isValid);
-            Assert.IsTrue(message.Contains("Start time must be before"));
+            Assert.False(isValid);
+            Assert.Contains("Start time must be before", message);
         }
         
-        [TestMethod]
+        [Fact]
         public void ValidateTimeRange_TooLongForHourUnit_ReturnsFalse()
         {
             // Arrange
@@ -160,11 +159,11 @@ namespace GPM.Gantt.Tests
             var (isValid, message) = TimelineHelper.ValidateTimeRange(start, end, TimeUnit.Hour);
             
             // Assert
-            Assert.IsFalse(isValid);
-            Assert.IsTrue(message.Contains("should not exceed"));
+            Assert.False(isValid);
+            Assert.Contains("should not exceed", message);
         }
         
-        [TestMethod]
+        [Fact]
         public void ExpandToUnitBoundaries_Day_ReturnsAlignedBoundaries()
         {
             // Arrange
@@ -175,11 +174,11 @@ namespace GPM.Gantt.Tests
             var (alignedStart, alignedEnd) = TimelineHelper.ExpandToUnitBoundaries(start, end, TimeUnit.Day);
             
             // Assert
-            Assert.AreEqual(new DateTime(2024, 1, 15), alignedStart);
-            Assert.AreEqual(new DateTime(2024, 1, 18), alignedEnd);
+            Assert.Equal(new DateTime(2024, 1, 15), alignedStart);
+            Assert.Equal(new DateTime(2024, 1, 18), alignedEnd);
         }
         
-        [TestMethod]
+        [Fact]
         public void CalculateWorkingDays_ExcludesWeekends_ReturnsCorrectCount()
         {
             // Arrange (Jan 1, 2024 is a Monday)
@@ -190,10 +189,10 @@ namespace GPM.Gantt.Tests
             var workingDays = TimelineHelper.CalculateWorkingDays(start, end);
             
             // Assert
-            Assert.AreEqual(5, workingDays); // Monday to Friday
+            Assert.Equal(5, workingDays); // Monday to Friday
         }
         
-        [TestMethod]
+        [Fact]
         public void CalculateWorkingDays_WithHolidays_ExcludesHolidays()
         {
             // Arrange
@@ -205,10 +204,10 @@ namespace GPM.Gantt.Tests
             var workingDays = TimelineHelper.CalculateWorkingDays(start, end, holidays);
             
             // Assert
-            Assert.AreEqual(4, workingDays); // 5 weekdays minus 1 holiday
+            Assert.Equal(4, workingDays); // 5 weekdays minus 1 holiday
         }
         
-        [TestMethod]
+        [Fact]
         public void GetTimelineMetadata_ReturnsCompleteMetadata()
         {
             // Arrange
@@ -219,11 +218,11 @@ namespace GPM.Gantt.Tests
             var metadata = TimelineHelper.GetTimelineMetadata(start, end, TimeUnit.Day);
             
             // Assert
-            Assert.AreEqual(start, metadata.OriginalStart);
-            Assert.AreEqual(end, metadata.OriginalEnd);
-            Assert.AreEqual(TimeUnit.Day, metadata.TimeUnit);
-            Assert.AreEqual(3, metadata.TickCount); // Jan 15, 16, 17
-            Assert.IsTrue(metadata.TotalDuration.TotalDays > 2);
+            Assert.Equal(start, metadata.OriginalStart);
+            Assert.Equal(end, metadata.OriginalEnd);
+            Assert.Equal(TimeUnit.Day, metadata.TimeUnit);
+            Assert.Equal(3, metadata.TickCount); // Jan 15, 16, 17
+            Assert.True(metadata.TotalDuration.TotalDays > 2);
         }
     }
 }

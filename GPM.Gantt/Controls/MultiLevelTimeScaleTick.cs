@@ -22,7 +22,8 @@ namespace GPM.Gantt.Controls
             DependencyProperty.Register(nameof(DisplayText), typeof(string), typeof(MultiLevelTimeScaleTick));
 
         public static readonly DependencyProperty ShowExpandButtonProperty =
-            DependencyProperty.Register(nameof(ShowExpandButton), typeof(bool), typeof(MultiLevelTimeScaleTick));
+            DependencyProperty.Register(nameof(ShowExpandButton), typeof(bool), typeof(MultiLevelTimeScaleTick),
+                new PropertyMetadata(false, OnShowExpandButtonChanged));
 
         public static readonly DependencyProperty IsExpandedProperty =
             DependencyProperty.Register(nameof(IsExpanded), typeof(bool), typeof(MultiLevelTimeScaleTick),
@@ -37,6 +38,7 @@ namespace GPM.Gantt.Controls
         private TextBlock? _displayTextBlock;
         private Button? _expandButton;
         private Grid? _contentGrid;
+        private bool _isSubscribed = false;
 
         public DateTime Date
         {
@@ -120,12 +122,34 @@ namespace GPM.Gantt.Controls
 
             _mainBorder.Child = _contentGrid;
             Content = _mainBorder;
+        }
 
-            // Subscribe to property changes
-            ShowExpandButtonProperty.OverrideMetadata(typeof(MultiLevelTimeScaleTick), 
-                new PropertyMetadata(false, OnShowExpandButtonChanged));
-            IsExpandedProperty.OverrideMetadata(typeof(MultiLevelTimeScaleTick), 
-                new PropertyMetadata(false, OnIsExpandedChanged));
+        // Method to properly subscribe to events
+        public void SubscribeToEvents()
+        {
+            if (!_isSubscribed && _expandButton != null)
+            {
+                _expandButton.Click += OnExpandButtonClick;
+                _isSubscribed = true;
+            }
+        }
+
+        // Method to properly unsubscribe from events
+        public void UnsubscribeFromEvents()
+        {
+            if (_isSubscribed && _expandButton != null)
+            {
+                _expandButton.Click -= OnExpandButtonClick;
+                _isSubscribed = false;
+            }
+        }
+
+        private static void OnShowExpandButtonChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is MultiLevelTimeScaleTick tick)
+            {
+                tick.OnShowExpandButtonChanged();
+            }
         }
 
         private static void OnIsExpandedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -136,7 +160,7 @@ namespace GPM.Gantt.Controls
             }
         }
 
-        private void OnShowExpandButtonChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        private void OnShowExpandButtonChanged()
         {
             if (_expandButton != null)
             {
@@ -155,6 +179,13 @@ namespace GPM.Gantt.Controls
 
         private void OnExpandButtonClick(object sender, RoutedEventArgs e)
         {
+            // Ensure this runs on the UI thread
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(new Action(() => OnExpandButtonClick(sender, e)));
+                return;
+            }
+
             if (IsExpanded)
             {
                 // Request collapse
@@ -185,11 +216,34 @@ namespace GPM.Gantt.Controls
         {
             if (config == null) return;
 
+            // Ensure all UI updates happen on the dispatcher thread
+            if (Dispatcher.CheckAccess())
+            {
+                ApplyStyle(config);
+            }
+            else
+            {
+                Dispatcher.BeginInvoke(new Action(() => ApplyStyle(config)));
+            }
+        }
+
+        private void ApplyStyle(TimeLevelConfiguration config)
+        {
             Height = config.Height;
-            _mainBorder.Background = config.Background;
-            _displayTextBlock.Foreground = config.Foreground;
-            _displayTextBlock.FontFamily = new FontFamily(config.FontFamily);
-            _displayTextBlock.FontSize = config.FontSize;
+            
+            if (_mainBorder != null)
+                _mainBorder.Background = config.Background;
+                
+            if (_displayTextBlock != null)
+            {
+                _displayTextBlock.Foreground = config.Foreground;
+                
+                // Create FontFamily on UI thread
+                if (!string.IsNullOrEmpty(config.FontFamily))
+                    _displayTextBlock.FontFamily = new FontFamily(config.FontFamily);
+                    
+                _displayTextBlock.FontSize = config.FontSize;
+            }
         }
     }
 

@@ -91,7 +91,7 @@ namespace GPM.Gantt.Demo
             });
             
             // Set default theme
-            Gantt.Theme = _defaultTheme;
+            Gantt.Theme = _modernTheme;
         }
 
         private void ThemeComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)

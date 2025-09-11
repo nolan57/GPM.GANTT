@@ -6,6 +6,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Collections.Generic;
 using GPM.Gantt.Models;
+using GPM.Gantt.Services;
 
 namespace GPM.Gantt.Interaction
 {
@@ -59,7 +60,7 @@ namespace GPM.Gantt.Interaction
 
             _feedbackCanvas?.Children.Add(_dragPreview);
 
-            // Add subtle animation
+            // Add subtle animation (duration and easing from tokens)
             _pulseAnimation = CreatePulseAnimation();
             _pulseAnimation.Begin(_dragPreview);
         }
@@ -102,8 +103,12 @@ namespace GPM.Gantt.Interaction
             {
                 _pulseAnimation?.Stop();
 
-                // Animate fade out
-                var fadeOut = new DoubleAnimation(0, TimeSpan.FromMilliseconds(200));
+                // Animate fade out using tokens
+                var animTokens = ThemeManager.Tokens.GetAnimationTokens();
+                var fadeOut = new DoubleAnimation(0, TimeSpan.FromMilliseconds(animTokens.DragPreviewFadeOutMs))
+                {
+                    EasingFunction = GetEasing(animTokens.FadeEasing)
+                };
                 fadeOut.Completed += (s, e) =>
                 {
                     _feedbackCanvas.Children.Remove(_dragPreview);
@@ -258,27 +263,31 @@ namespace GPM.Gantt.Interaction
 
         private Storyboard CreatePulseAnimation()
         {
+            var tokens = ThemeManager.Tokens.GetAnimationTokens();
+
             var storyboard = new Storyboard
             {
                 RepeatBehavior = RepeatBehavior.Forever
             };
 
+            var easing = GetEasing(tokens.DragPreviewPulseEasing);
+
             var scaleXAnimation = new DoubleAnimation
             {
                 From = 1.0,
                 To = 1.05,
-                Duration = TimeSpan.FromMilliseconds(800),
+                Duration = TimeSpan.FromMilliseconds(tokens.DragPreviewPulseDurationMs),
                 AutoReverse = true,
-                EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut }
+                EasingFunction = easing
             };
 
             var scaleYAnimation = new DoubleAnimation
             {
                 From = 1.0,
                 To = 1.05,
-                Duration = TimeSpan.FromMilliseconds(800),
+                Duration = TimeSpan.FromMilliseconds(tokens.DragPreviewPulseDurationMs),
                 AutoReverse = true,
-                EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut }
+                EasingFunction = easing
             };
 
             Storyboard.SetTargetProperty(scaleXAnimation, new PropertyPath("RenderTransform.ScaleX"));
@@ -288,6 +297,39 @@ namespace GPM.Gantt.Interaction
             storyboard.Children.Add(scaleYAnimation);
 
             return storyboard;
+        }
+
+        private static IEasingFunction GetEasing(string id)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(id)) return new QuadraticEase { EasingMode = EasingMode.EaseOut };
+                var key = id.Trim();
+                var lower = key.ToLowerInvariant();
+
+                EasingMode mode = EasingMode.EaseOut;
+                if (lower.EndsWith("easeinout")) mode = EasingMode.EaseInOut;
+                else if (lower.EndsWith("easein")) mode = EasingMode.EaseIn;
+                else if (lower.EndsWith("easeout")) mode = EasingMode.EaseOut;
+
+                if (lower.StartsWith("cubic")) return new CubicEase { EasingMode = mode };
+                if (lower.StartsWith("quadratic")) return new QuadraticEase { EasingMode = mode };
+                if (lower.StartsWith("sine")) return new SineEase { EasingMode = mode };
+                if (lower.StartsWith("quartic")) return new QuarticEase { EasingMode = mode };
+                if (lower.StartsWith("quintic")) return new QuinticEase { EasingMode = mode };
+                if (lower.StartsWith("back")) return new BackEase { EasingMode = mode };
+                if (lower.StartsWith("bounce")) return new BounceEase { EasingMode = mode };
+                if (lower.StartsWith("circle") || lower.StartsWith("circular")) return new CircleEase { EasingMode = mode };
+                if (lower.StartsWith("exponential") || lower.StartsWith("expo")) return new ExponentialEase { EasingMode = mode };
+                if (lower.StartsWith("power")) return new PowerEase { EasingMode = mode };
+                if (lower.StartsWith("elastic")) return new ElasticEase { EasingMode = mode };
+
+                return new QuadraticEase { EasingMode = EasingMode.EaseOut };
+            }
+            catch
+            {
+                return new QuadraticEase { EasingMode = EasingMode.EaseOut };
+            }
         }
 
         public void Cleanup()

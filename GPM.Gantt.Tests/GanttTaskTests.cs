@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System;
 using System.Linq;
 using GPM.Gantt.Models;
@@ -8,25 +8,24 @@ namespace GPM.Gantt.Tests
     /// <summary>
     /// Unit tests for the GanttTask class.
     /// </summary>
-    [TestClass]
     public class GanttTaskTests
     {
-        [TestMethod]
+        [Fact]
         public void GanttTask_DefaultConstructor_SetsDefaultValues()
         {
             // Arrange & Act
             var task = new GanttTask();
             
             // Assert
-            Assert.AreNotEqual(Guid.Empty, task.Id);
-            Assert.AreEqual(1, task.RowIndex);
-            Assert.AreEqual(string.Empty, task.Title);
-            Assert.AreEqual(0, task.Progress);
-            Assert.AreEqual(Models.TaskPriority.Normal, task.Priority);
-            Assert.AreEqual(Models.TaskStatus.NotStarted, task.Status);
+            Assert.NotEqual(Guid.Empty, task.Id);
+            Assert.Equal(1, task.RowIndex);
+            Assert.Equal(string.Empty, task.Title);
+            Assert.Equal(0, task.Progress);
+            Assert.Equal(Models.TaskPriority.Normal, task.Priority);
+            Assert.Equal(Models.TaskStatus.NotStarted, task.Status);
         }
         
-        [TestMethod]
+        [Fact]
         public void GanttTask_ValidTask_IsValidReturnsTrue()
         {
             // Arrange
@@ -42,10 +41,10 @@ namespace GPM.Gantt.Tests
             var result = task.IsValid();
             
             // Assert
-            Assert.IsTrue(result);
+            Assert.True(result);
         }
         
-        [TestMethod]
+        [Fact]
         public void GanttTask_EndBeforeStart_IsValidReturnsFalse()
         {
             // Arrange
@@ -61,10 +60,10 @@ namespace GPM.Gantt.Tests
             var result = task.IsValid();
             
             // Assert
-            Assert.IsFalse(result);
+            Assert.False(result);
         }
         
-        [TestMethod]
+        [Fact]
         public void GanttTask_EmptyTitle_IsValidReturnsFalse()
         {
             // Arrange
@@ -80,10 +79,10 @@ namespace GPM.Gantt.Tests
             var result = task.IsValid();
             
             // Assert
-            Assert.IsFalse(result);
+            Assert.False(result);
         }
         
-        [TestMethod]
+        [Fact]
         public void GanttTask_GetValidationErrors_ReturnsCorrectErrors()
         {
             // Arrange
@@ -100,14 +99,14 @@ namespace GPM.Gantt.Tests
             var errors = task.GetValidationErrors();
             
             // Assert
-            Assert.IsTrue(errors.Count > 0);
-            Assert.IsTrue(errors.Any(e => e.Contains("Start date must be before")));
-            Assert.IsTrue(errors.Any(e => e.Contains("title is required")));
-            Assert.IsTrue(errors.Any(e => e.Contains("Row index must be greater")));
-            Assert.IsTrue(errors.Any(e => e.Contains("Progress must be between")));
+            Assert.True(errors.Count > 0);
+            Assert.Contains(errors, e => e.Contains("Start date must be before"));
+            Assert.Contains(errors, e => e.Contains("title is required"));
+            Assert.Contains(errors, e => e.Contains("Row index must be greater"));
+            Assert.Contains(errors, e => e.Contains("Progress must be between"));
         }
         
-        [TestMethod]
+        [Fact]
         public void GanttTask_Duration_CalculatesCorrectly()
         {
             // Arrange
@@ -123,10 +122,10 @@ namespace GPM.Gantt.Tests
             var duration = task.Duration;
             
             // Assert
-            Assert.AreEqual(TimeSpan.FromDays(5), duration);
+            Assert.Equal(TimeSpan.FromDays(5), duration);
         }
         
-        [TestMethod]
+        [Fact]
         public void GanttTask_OverlapsWith_DetectsOverlap()
         {
             // Arrange
@@ -146,10 +145,10 @@ namespace GPM.Gantt.Tests
             var overlaps = task1.OverlapsWith(task2);
             
             // Assert
-            Assert.IsTrue(overlaps);
+            Assert.True(overlaps);
         }
         
-        [TestMethod]
+        [Fact]
         public void GanttTask_OverlapsWith_NoOverlap_ReturnsFalse()
         {
             // Arrange
@@ -169,10 +168,10 @@ namespace GPM.Gantt.Tests
             var overlaps = task1.OverlapsWith(task2);
             
             // Assert
-            Assert.IsFalse(overlaps);
+            Assert.False(overlaps);
         }
         
-        [TestMethod]
+        [Fact]
         public void GanttTask_Clone_CreatesNewInstance()
         {
             // Arrange
@@ -189,12 +188,12 @@ namespace GPM.Gantt.Tests
             var clone = original.Clone();
             
             // Assert
-            Assert.AreNotEqual(original.Id, clone.Id);
-            Assert.AreEqual(original.Title, clone.Title);
-            Assert.AreEqual(original.Start, clone.Start);
-            Assert.AreEqual(original.End, clone.End);
-            Assert.AreEqual(original.Progress, clone.Progress);
-            Assert.AreEqual(original.Priority, clone.Priority);
+            Assert.NotEqual(original.Id, clone.Id);
+            Assert.Equal(original.Title, clone.Title);
+            Assert.Equal(original.Start, clone.Start);
+            Assert.Equal(original.End, clone.End);
+            Assert.Equal(original.Progress, clone.Progress);
+            Assert.Equal(original.Priority, clone.Priority);
         }
     }
 }

@@ -525,3 +525,6 @@ Remember to:
 2. Follow best practices for performance and accessibility
 3. Properly register custom renderers when extending the task bar system
 4. Test thoroughly across different scenarios and configurations
+
+> Note on DropShadowEffect
+> If a DropShadowEffect is applied to a shape derived from GanttShapeBase, the renderer insets the drawn geometry slightly (a few pixels) within the control bounds. This allows the blur to be visible within the element without relying on drawing outside its bounds (which may be clipped by ancestor visuals). This behavior only applies when the effect is active and does not change the control’s measured/arranged size.

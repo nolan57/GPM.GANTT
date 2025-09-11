@@ -10,11 +10,17 @@ namespace GPM.Gantt.Services
     public static class ThemeManager
     {
         private static readonly Lazy<IThemeService> _themeService = new(() => new ThemeService());
+        private static readonly Lazy<IDesignTokenService> _designTokenService = new(() => new DesignTokenService(Instance));
 
         /// <summary>
         /// Gets the singleton theme service instance.
         /// </summary>
         public static IThemeService Instance => _themeService.Value;
+
+        /// <summary>
+        /// Gets the singleton design token service instance for cross-component reusable tokens.
+        /// </summary>
+        public static IDesignTokenService Tokens => _designTokenService.Value;
 
         /// <summary>
         /// Event raised when the current theme changes.

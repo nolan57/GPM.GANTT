@@ -159,20 +159,52 @@ namespace GPM.Gantt.Interaction
                 {
                     // Calculate new dates based on position change
                     var timeIndexDelta = _currentDragContext.CurrentTimeIndex - _currentDragContext.OriginalTimeIndex;
-                    var newStartTime = CalculateDateFromTimeIndex(_currentDragContext.CurrentTimeIndex);
-                    var taskDuration = CalculateTaskDuration(_currentDragContext.TaskBar);
-                    var newEndTime = newStartTime.Add(taskDuration);
 
-                    var completedArgs = new DragCompletedEventArgs(
-                        _currentDragContext.TaskBar,
-                        _currentDragContext.OriginalRowIndex,
-                        _currentDragContext.OriginalTimeIndex,
-                        _currentDragContext.CurrentRowIndex,
-                        _currentDragContext.CurrentTimeIndex,
-                        newStartTime,
-                        newEndTime);
+                    // Use precise tick mapping to avoid cumulative +1 span on each drag
+                    if (GanttContainer != null)
+                    {
+                        var ticks = GPM.Gantt.Utilities.TimelineCalculator.GenerateTicks(
+                            GanttContainer.StartTime,
+                            GanttContainer.EndTime,
+                            GanttContainer.TimeUnit,
+                            GanttContainer.Culture);
 
-                    DragCompleted?.Invoke(this, completedArgs);
+                        int totalColumns = Math.Max(1, ticks.Count);
+                        int startIndex = Math.Max(0, Math.Min(_currentDragContext.CurrentTimeIndex, totalColumns - 1));
+                        int columnSpan = Math.Max(1, System.Windows.Controls.Grid.GetColumnSpan(_currentDragContext.TaskBar));
+                        int endIndex = Math.Max(0, Math.Min(startIndex + columnSpan - 1, totalColumns - 1));
+
+                        var newStartTime = ticks[startIndex];
+                        var newEndTime = ticks[endIndex]; // align to start of last included tick
+
+                        var completedArgs = new DragCompletedEventArgs(
+                            _currentDragContext.TaskBar,
+                            _currentDragContext.OriginalRowIndex,
+                            _currentDragContext.OriginalTimeIndex,
+                            _currentDragContext.CurrentRowIndex,
+                            _currentDragContext.CurrentTimeIndex,
+                            newStartTime,
+                            newEndTime);
+
+                        DragCompleted?.Invoke(this, completedArgs);
+                    }
+                    else
+                    {
+                        var newStartTime = CalculateDateFromTimeIndex(_currentDragContext.CurrentTimeIndex);
+                        var taskDuration = CalculateTaskDuration(_currentDragContext.TaskBar);
+                        var newEndTime = newStartTime.Add(taskDuration);
+
+                        var completedArgs = new DragCompletedEventArgs(
+                            _currentDragContext.TaskBar,
+                            _currentDragContext.OriginalRowIndex,
+                            _currentDragContext.OriginalTimeIndex,
+                            _currentDragContext.CurrentRowIndex,
+                            _currentDragContext.CurrentTimeIndex,
+                            newStartTime,
+                            newEndTime);
+
+                        DragCompleted?.Invoke(this, completedArgs);
+                    }
                 }
             }
             finally
@@ -324,8 +356,22 @@ namespace GPM.Gantt.Interaction
 
         private TimeSpan CalculateTaskDuration(GanttTaskBar taskBar)
         {
-            // Default duration - this should be retrieved from the actual task data
-            return TimeSpan.FromDays(1);
+            // Derive duration from current column span to preserve the task's existing visual length
+            if (GanttContainer == null || taskBar == null)
+                return TimeSpan.FromDays(1);
+
+            var totalColumns = Math.Max(1, GanttContainer.ColumnDefinitions.Count);
+            var timeRange = GanttContainer.EndTime - GanttContainer.StartTime;
+            var timePerColumnDays = timeRange.TotalDays / totalColumns;
+
+            // Use the Grid column span of the task bar to compute its duration.
+            // Important: TimelineHelper.CalculateTaskSpan treats endIndex as inclusive
+            // (columnSpan = endIndex - startIndex + 1). To represent N columns,
+            // the taskEnd should align to the start of the last included tick, i.e.,
+            // duration = (N - 1) * timePerColumn.
+            var columnSpan = Math.Max(1, System.Windows.Controls.Grid.GetColumnSpan(taskBar));
+            var durationDays = Math.Max(0, (columnSpan - 1) * timePerColumnDays);
+            return TimeSpan.FromDays(durationDays);
         }
 
         private double CalculateTimeIndexDelta(double deltaX)

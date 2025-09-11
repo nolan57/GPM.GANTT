@@ -94,13 +94,27 @@ namespace GPM.Gantt.Services
             var newTimeScale = CreateMultiLevelTimeScale(config, context);
             if (newTimeScale is Grid newContainer)
             {
-                foreach (UIElement child in newContainer.Children)
-                {
-                    container.Children.Add(child);
-                }
+                // Create new row definitions to avoid "already belongs to another collection" error
                 foreach (var rowDef in newContainer.RowDefinitions)
                 {
-                    container.RowDefinitions.Add(rowDef);
+                    var newRowDef = new RowDefinition
+                    {
+                        Height = rowDef.Height
+                    };
+                    container.RowDefinitions.Add(newRowDef);
+                }
+                
+                // Move children from newContainer to container with proper row indices
+                while (newContainer.Children.Count > 0)
+                {
+                    var child = newContainer.Children[0];
+                    newContainer.Children.RemoveAt(0);
+                    
+                    // Get the row index from the new container and apply it to the child
+                    var rowIndex = Grid.GetRow(child);
+                    Grid.SetRow(child, rowIndex);
+                    
+                    container.Children.Add(child);
                 }
             }
         }
@@ -222,6 +236,9 @@ namespace GPM.Gantt.Services
 
         private void ConfigureTick(MultiLevelTimeScaleTick tick, DateTime date, TimeLevelConfiguration level, double width)
         {
+            // Unsubscribe from events first to prevent duplicates
+            tick.UnsubscribeFromEvents();
+            
             tick.Width = width;
             tick.Height = level.Height;
             tick.Date = date;
@@ -236,8 +253,7 @@ namespace GPM.Gantt.Services
                 tick.IsExpanded = IsSegmentExpanded(date);
                 
                 // Subscribe to events
-                tick.ExpandRequested += OnTickExpandRequested;
-                tick.CollapseRequested += OnTickCollapseRequested;
+                tick.SubscribeToEvents();
             }
         }
 
@@ -346,7 +362,10 @@ namespace GPM.Gantt.Services
         {
             if (_tickPool.Count > 0)
             {
-                return _tickPool.Dequeue();
+                var tick = _tickPool.Dequeue();
+                // Ensure the tick is properly reset before reuse
+                tick.UnsubscribeFromEvents();
+                return tick;
             }
             return new MultiLevelTimeScaleTick();
         }
@@ -355,6 +374,9 @@ namespace GPM.Gantt.Services
         {
             if (tick != null && _tickPool.Count < MaxPoolSize)
             {
+                // Unsubscribe from events before returning to pool
+                tick.UnsubscribeFromEvents();
+                
                 // Reset tick properties
                 tick.Date = DateTime.MinValue;
                 tick.DisplayText = string.Empty;

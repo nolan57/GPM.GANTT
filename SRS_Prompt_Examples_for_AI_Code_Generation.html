@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Examples for AI Code Generation Based on Software Requirements</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --code-bg: #2c3e50;
+            --code-color: #ecf0f1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-main);
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+            margin: 2rem 0 1rem 0;
+        }
+
+        h3 {
+            color: var(--dark-color);
+            margin: 1.5rem 0 0.5rem 0;
+        }
+
+        h4 {
+            color: var(--secondary-color);
+            margin: 1rem 0 0.5rem 0;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        ul, ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background-color: white;
+            box-shadow: var(--shadow);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--light-color);
+        }
+
+        tr:hover {
+            background-color: #f1f7fd;
+        }
+
+        .example {
+            background-color: #e8f4fc;
+            border-left: 4px solid var(--secondary-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .quote {
+            background-color: #fef9e7;
+            border-left: 4px solid var(--warning-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+
+        .priority-high {
+            background-color: #fadbd8;
+            color: #c0392b;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .priority-medium {
+            background-color: #fdebd0;
+            color: #d35400;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .priority-low {
+            background-color: #d5f5e3;
+            color: #27ae60;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .section {
+            background-color: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .feature-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-list li:before {
+            content: "☐";
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .approval-section {
+            background-color: #e8f8f5;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .approval-item {
+            margin-bottom: 1rem;
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background: #ddd;
+            margin: 2rem 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--dark-color);
+            font-size: 0.9rem;
+        }
+
+        /* Code block styling */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-color);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        /* Prompt block styling */
+        .prompt-block {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .prompt-block:before {
+            content: "AI Prompt";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .prompt-content {
+            margin-top: 10px;
+        }
+
+        .best-practices {
+            background-color: #e8f8f5;
+            border-left: 4px solid var(--success-color);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .template-box {
+            background-color: #fef9e7;
+            border: 2px dashed var(--warning-color);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .section {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .prompt-block {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Prompt Examples for AI Code Generation</h1>
+            <p>Based on Software Requirements</p>
+        </header>
+
+        <main>
+            <section class="section">
+                <p>This document provides prompt examples that help AI generate valid code from software requirements specifications. These prompts are designed to translate business requirements into technical implementations.</p>
+            </section>
+
+            <section class="section">
+                <h2>1. Introduction Section Prompts</h2>
+                
+                <h3>1.1 Purpose Translation Prompt</h3>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on this software purpose: "This document describes what we want our online store website to do - let customers browse products, add them to a shopping cart, and complete purchases securely."
+                        <br><br>
+                        Generate a technical project overview that includes:
+                        <ol>
+                            <li>The main technology stack recommendation (e.g., React/Vue for frontend, Node.js/Spring Boot for backend, PostgreSQL for database)</li>
+                            <li>Core architectural patterns to implement (e.g., MVC, Microservices, etc.)</li>
+                            <li>Security considerations for handling purchases</li>
+                            <li>Key components that will be needed</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <h3>1.2 Scope Translation Prompt</h3>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on this software scope: "Our online store will be used by customers shopping from home or work. They'll be able to shop 24/7 from any device with internet, and we'll save time by not needing a physical store."
+                        <br><br>
+                        Generate a technical requirements specification that includes:
+                        <ol>
+                            <li>Supported platforms and devices</li>
+                            <li>User authentication approach</li>
+                            <li>Expected concurrent user load</li>
+                            <li>Required uptime and availability targets</li>
+                            <li>Cross-platform compatibility requirements</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>2. Overall Description Prompts</h2>
+                
+                <h3>2.1 Product Perspective Translation Prompt</h3>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on this product perspective: "Our customer website will be separate from our internal systems for now. Customers can use it without needing to log into anything else, but eventually we'd like to connect it to our inventory system."
+                        <br><br>
+                        Generate a system architecture plan that includes:
+                        <ol>
+                            <li>Initial system boundaries and components</li>
+                            <li>API design for future inventory system integration</li>
+                            <li>Data synchronization strategy between systems</li>
+                            <li>Security measures for system integration</li>
+                            <li>Microservices vs monolith recommendation</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <h3>2.2 Product Functions Translation Prompt</h3>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on these product functions:
+                        <ol>
+                            <li>Show a catalog of all our products</li>
+                            <li>Let customers save items to a shopping cart</li>
+                            <li>Process payments securely</li>
+                            <li>Send order confirmations by email</li>
+                        </ol>
+                        <br>
+                        Generate a feature implementation plan with:
+                        <ol>
+                            <li>Database schema design for products and shopping cart</li>
+                            <li>API endpoints for each function</li>
+                            <li>Frontend component structure</li>
+                            <li>Payment processing integration approach</li>
+                            <li>Email notification system design</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>3. Specific Requirements Prompts</h2>
+                
+                <h3>3.1 Functional Requirements Translation Prompts</h3>
+                
+                <h4>User Accounts Implementation Prompt</h4>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on these user account requirements:
+                        <ul>
+                            <li>People can create accounts with email and password</li>
+                            <li>People can log in to their accounts</li>
+                            <li>People can reset their password if they forget it</li>
+                            <li>The system sends a confirmation email when they sign up</li>
+                        </ul>
+                        <br>
+                        Generate a complete user authentication system with:
+                        <ol>
+                            <li>User model/schema with validation</li>
+                            <li>Password hashing and security implementation</li>
+                            <li>Email verification workflow</li>
+                            <li>Password reset functionality with secure tokens</li>
+                            <li>Session management</li>
+                            <li>REST API endpoints for all authentication operations</li>
+                            <li>Frontend forms for registration, login, and password reset</li>
+                        </ol>
+                        <br>
+                        Use [SPECIFY TECHNOLOGY STACK] and follow security best practices.
+                    </div>
+                </div>
+                
+                <h4>Product Catalog Implementation Prompt</h4>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on these product catalog requirements:
+                        <ul>
+                            <li>Show all products on categorized pages</li>
+                            <li>Let customers search for products by name or description</li>
+                            <li>Let customers filter products by category, price, or features</li>
+                            <li>Show clear photos and descriptions for each product</li>
+                            <li>Show prices clearly, including any discounts</li>
+                        </ul>
+                        <br>
+                        Generate a product catalog system with:
+                        <ol>
+                            <li>Product model/schema with categories, pricing, and media</li>
+                            <li>Database indexing strategy for search and filtering</li>
+                            <li>API endpoints for product listing with pagination</li>
+                            <li>Search functionality implementation</li>
+                            <li>Filtering mechanism by multiple criteria</li>
+                            <li>Frontend components for product display and filtering</li>
+                            <li>Image optimization and responsive display</li>
+                        </ol>
+                        <br>
+                        Use [SPECIFY TECHNOLOGY STACK] and optimize for performance.
+                    </div>
+                </div>
+                
+                <h4>Shopping Cart Implementation Prompt</h4>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on these shopping cart requirements:
+                        <ul>
+                            <li>Add items to a virtual shopping cart</li>
+                            <li>See what's in the cart at any time</li>
+                            <li>Change quantities or remove items</li>
+                            <li>See the total cost including tax and shipping</li>
+                            <li>Save the cart to finish shopping later (for logged-in users)</li>
+                        </ul>
+                        <br>
+                        Generate a shopping cart system with:
+                        <ol>
+                            <li>Cart model/schema for session and persistent storage</li>
+                            <li>Cart operations: add, update, remove items</li>
+                            <li>Tax and shipping calculation logic</li>
+                            <li>Real-time total calculation</li>
+                            <li>API endpoints for cart operations</li>
+                            <li>Frontend cart UI components</li>
+                            <li>Persistence strategy for logged-in users</li>
+                        </ol>
+                        <br>
+                        Use [SPECIFY TECHNOLOGY STACK] and ensure data consistency.
+                    </div>
+                </div>
+                
+                <h3>3.2 Non-Functional Requirements Translation Prompts</h3>
+                
+                <h4>Performance Requirements Implementation Prompt</h4>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on these performance requirements:
+                        <ul>
+                            <li>The website should load quickly (under 3 seconds)</li>
+                            <li>Searching for products should be instant (under 1 second)</li>
+                            <li>The system should handle many customers shopping at once</li>
+                        </ul>
+                        <br>
+                        Generate a performance optimization plan that includes:
+                        <ol>
+                            <li>Frontend optimization techniques (lazy loading, code splitting, caching)</li>
+                            <li>Backend optimization strategies (database indexing, query optimization)</li>
+                            <li>CDN implementation for static assets</li>
+                            <li>Caching strategy for product data and search results</li>
+                            <li>Load testing approach to validate performance targets</li>
+                            <li>Monitoring and alerting for performance metrics</li>
+                        </ol>
+                        <br>
+                        Use [SPECIFY TECHNOLOGY STACK] and follow performance best practices.
+                    </div>
+                </div>
+                
+                <h4>Security Requirements Implementation Prompt</h4>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on these security requirements:
+                        <ul>
+                            <li>Customer passwords should be kept secret and secure</li>
+                            <li>Customer information should be backed up regularly</li>
+                            <li>Only authorized people should access order information</li>
+                            <li>All communication should be encrypted</li>
+                        </ul>
+                        <br>
+                        Generate a security implementation plan that includes:
+                        <ol>
+                            <li>Password hashing and storage approach</li>
+                            <li>Data backup and recovery strategy</li>
+                            <li>Role-based access control for order information</li>
+                            <li>HTTPS/SSL implementation</li>
+                            <li>Input validation and sanitization</li>
+                            <li>Security headers and CORS configuration</li>
+                            <li>Vulnerability scanning and testing approach</li>
+                        </ol>
+                        <br>
+                        Use [SPECIFY TECHNOLOGY STACK] and follow security best practices.
+                    </div>
+                </div>
+                
+                <h4>Usability Requirements Implementation Prompt</h4>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on these usability requirements:
+                        <ul>
+                            <li>First-time visitors should understand how to shop within 2 minutes</li>
+                            <li>The website should be easy to navigate with clear buttons</li>
+                            <li>Error messages should explain what went wrong in plain language</li>
+                            <li>The website should work on phones, tablets, and computers</li>
+                        </ul>
+                        <br>
+                        Generate a usability implementation plan that includes:
+                        <ol>
+                            <li>User interface design principles and component library</li>
+                            <li>Responsive design implementation approach</li>
+                            <li>Intuitive navigation structure</li>
+                            <li>Clear error messaging strategy</li>
+                            <li>User onboarding and guidance features</li>
+                            <li>Accessibility compliance (WCAG)</li>
+                            <li>User testing approach</li>
+                        </ol>
+                        <br>
+                        Use [SPECIFY TECHNOLOGY STACK] and follow UX best practices.
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>4. External Interface Requirements Prompts</h2>
+                
+                <h3>User Interface Design Prompt</h3>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on this UI requirement: "The website should look clean and professional. Customers should see our logo at the top, easy navigation to product categories across the top, a search bar, and their shopping cart in the upper right corner."
+                        <br><br>
+                        Generate a frontend implementation plan that includes:
+                        <ol>
+                            <li>Component hierarchy and structure</li>
+                            <li>Styling approach (CSS framework or custom)</li>
+                            <li>Responsive navigation bar implementation</li>
+                            <li>Header component with logo, navigation, search, and cart</li>
+                            <li>Design system with colors, typography, and spacing</li>
+                            <li>Mobile-friendly navigation approach</li>
+                        </ol>
+                        <br>
+                        Use [SPECIFY FRONTEND TECHNOLOGY] and follow modern UI/UX principles.
+                    </div>
+                </div>
+                
+                <h3>Software Integration Prompt</h3>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on this integration requirement: "The website will connect to a payment company to process credit cards and PayPal payments."
+                        <br><br>
+                        Generate a payment processing integration plan that includes:
+                        <ol>
+                            <li>Payment service provider selection and integration approach</li>
+                            <li>API integration for credit card and PayPal processing</li>
+                            <li>Security measures for payment data handling</li>
+                            <li>Error handling and fallback mechanisms</li>
+                            <li>Testing strategy for payment flows</li>
+                            <li>Compliance requirements (PCI DSS)</li>
+                        </ol>
+                        <br>
+                        Use [SPECIFY TECHNOLOGY STACK] and follow payment processing best practices.
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>5. Other Requirements Prompts</h2>
+                
+                <h3>Legal Compliance Implementation Prompt</h3>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on this legal requirement: "Must follow privacy laws to protect customer information"
+                        <br><br>
+                        Generate a privacy compliance implementation plan that includes:
+                        <ol>
+                            <li>Data protection measures (GDPR, CCPA, etc.)</li>
+                            <li>Privacy policy implementation</li>
+                            <li>Cookie consent mechanism</li>
+                            <li>Data retention and deletion policies</li>
+                            <li>User data access and portability features</li>
+                            <li>Audit logging for compliance tracking</li>
+                        </ol>
+                        <br>
+                        Use [SPECIFY TECHNOLOGY STACK] and follow privacy compliance best practices.
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>6. Complete Feature Implementation Prompts</h2>
+                
+                <h3>End-to-End Feature Implementation Prompt</h3>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on these requirements for a shopping cart feature:
+                        <br><br>
+                        Description: Customers need to save items while they shop and checkout when ready.
+                        <br><br>
+                        Features:
+                        <ul>
+                            <li>Add items to a virtual shopping cart</li>
+                            <li>See what's in the cart at any time</li>
+                            <li>Change quantities or remove items</li>
+                            <li>See the total cost including tax and shipping</li>
+                            <li>Save the cart to finish shopping later (for logged-in users)</li>
+                        </ul>
+                        <br>
+                        Generate a complete implementation including:
+                        <ol>
+                            <li>Database schema design</li>
+                            <li>Backend API endpoints with documentation</li>
+                            <li>Frontend components with state management</li>
+                            <li>Business logic for cart operations</li>
+                            <li>Tax and shipping calculation logic</li>
+                            <li>User authentication integration</li>
+                            <li>Error handling and validation</li>
+                            <li>Testing strategy with unit and integration tests</li>
+                        </ol>
+                        <br>
+                        Use [SPECIFY FULL TECHNOLOGY STACK] and follow best practices for each technology.
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>7. Best Practices for Using These Prompts</h2>
+                
+                <h3>Prompt Customization Guidelines</h3>
+                <div class="best-practices">
+                    <ol>
+                        <li><strong>Replace placeholders</strong>: Always replace [SPECIFY TECHNOLOGY STACK] with actual technologies</li>
+                        <li><strong>Add specificity</strong>: Include version numbers, hosting requirements, or specific libraries when known</li>
+                        <li><strong>Adjust scope</strong>: Modify the requirements based on project complexity and timeline</li>
+                        <li><strong>Include constraints</strong>: Add any technical constraints, budget limitations, or team expertise considerations</li>
+                    </ol>
+                </div>
+                
+                <h3>Iterative Development Prompts</h3>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on the previously generated [FEATURE NAME] implementation:
+                        <ol>
+                            <li>Identify the most critical 20% of functionality for MVP</li>
+                            <li>Create a phased development plan with clear milestones</li>
+                            <li>Specify which components can be developed in parallel</li>
+                            <li>Identify potential technical risks and mitigation strategies</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <h3>Testing and Quality Assurance Prompt</h3>
+                <div class="prompt-block">
+                    <div class="prompt-content">
+                        Based on the implemented [FEATURE NAME]:
+                        <ol>
+                            <li>Generate unit tests for all business logic</li>
+                            <li>Create integration tests for API endpoints</li>
+                            <li>Develop end-to-end tests for user workflows</li>
+                            <li>Define performance benchmarks and load tests</li>
+                            <li>Create security testing plan</li>
+                            <li>Establish code quality standards and linting rules</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>8. Template for Creating New Prompts</h2>
+                
+                <div class="template-box">
+                    When creating new prompts for requirements not covered above, use this template:
+                    <br><br>
+                    <div class="prompt-block">
+                        <div class="prompt-content">
+                            Based on this requirement: "[EXACT REQUIREMENT TEXT]"
+                            <br><br>
+                            Generate [SPECIFIC DELIVERABLE] that includes:
+                            <ol>
+                                <li>[TECHNICAL COMPONENT 1]</li>
+                                <li>[TECHNICAL COMPONENT 2]</li>
+                                <li>[TECHNICAL COMPONENT 3]</li>
+                                <li>[ADDITIONAL CONSIDERATIONS]</li>
+                            </ol>
+                            <br>
+                            Use [TECHNOLOGY STACK] and follow [RELEVANT BEST PRACTICES].
+                        </div>
+                    </div>
+                    <br>
+                    This approach ensures that business requirements are accurately translated into technical implementations while maintaining consistency and quality.
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Prompt Examples for AI Code Generation Based on Software Requirements</p>
+        </footer>
+    </div>
+</body>
+</html>

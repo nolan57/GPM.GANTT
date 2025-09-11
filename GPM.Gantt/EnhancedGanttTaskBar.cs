@@ -59,6 +59,7 @@ namespace GPM.Gantt
         private ITaskBarShapeRenderer? _currentRenderer;
         private FrameworkElement? _shapeElement;
         private Canvas? _shapeContainer;
+        private bool _isRenderingInProgress = false; // Flag to prevent recursive rendering
 
         #endregion
 
@@ -156,6 +157,10 @@ namespace GPM.Gantt
 
         private void RenderShape()
         {
+            // Prevent recursive calls
+            if (_isRenderingInProgress)
+                return;
+
             if (!IsLoaded || ActualWidth <= 0 || ActualHeight <= 0)
             {
                 return;
@@ -174,10 +179,11 @@ namespace GPM.Gantt
                 return;
             }
 
-            InitializeShapeRendering();
-
+            _isRenderingInProgress = true;
             try
             {
+                InitializeShapeRendering();
+
                 _currentRenderer = TaskBarShapeRendererFactory.GetRenderer(Shape);
                 
                 var bounds = new Rect(0, 0, ActualWidth, ActualHeight);
@@ -204,6 +210,10 @@ namespace GPM.Gantt
             {
                 System.Diagnostics.Debug.WriteLine($"Shape rendering failed: {ex.Message}. Falling back to legacy rendering.");
                 UseLegacyRendering = true;
+            }
+            finally
+            {
+                _isRenderingInProgress = false;
             }
         }
 

@@ -171,11 +171,8 @@ namespace GPM.Gantt.TaskManagement
                 taskBar = new GanttTaskBar();
             }
             
-            // Configure common properties
-            taskBar.RowIndex = rowIndex;
-            taskBar.TimeIndex = startIndex;
-            taskBar.CustomText = task.Title;
-            // Other properties would be set in ConfigureTaskBar method
+            // Configure common properties using the shared method
+            ConfigureTaskBar(taskBar, task, rowIndex, startIndex, columnSpan, true, true, true, renderingConfig);
             
             return taskBar;
         }

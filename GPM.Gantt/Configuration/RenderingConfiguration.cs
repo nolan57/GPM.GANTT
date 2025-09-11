@@ -109,6 +109,54 @@ namespace GPM.Gantt.Configuration
         /// Gets or sets whether to enable batch rendering for improved performance.
         /// </summary>
         public bool EnableBatchRendering { get; set; } = true;
+        
+        /// <summary>
+        /// Creates a high-performance configuration optimized for large datasets.
+        /// </summary>
+        public static RenderingConfiguration HighPerformance() => new()
+        {
+            EnableVirtualization = true,
+            MaxVisibleTasks = 500,
+            EnableCaching = true,
+            GridMode = GridRenderingMode.Lines,
+            UseEnhancedShapeRendering = false,
+            PerformanceLevel = PerformanceLevel.Performance,
+            EnableGpuAcceleration = false,
+            EnableBatchRendering = true,
+            LayoutDebounceDelay = 200
+        };
+
+        /// <summary>
+        /// Creates a quality-focused configuration with enhanced visual features.
+        /// </summary>
+        public static RenderingConfiguration HighQuality() => new()
+        {
+            EnableVirtualization = true,
+            MaxVisibleTasks = 1000,
+            EnableCaching = true,
+            GridMode = GridRenderingMode.Rectangles,
+            UseEnhancedShapeRendering = true,
+            PerformanceLevel = PerformanceLevel.Quality,
+            EnableGpuAcceleration = true,
+            EnableBatchRendering = true,
+            LayoutDebounceDelay = 100
+        };
+
+        /// <summary>
+        /// Creates a balanced configuration for general use.
+        /// </summary>
+        public static RenderingConfiguration Balanced() => new()
+        {
+            EnableVirtualization = true,
+            MaxVisibleTasks = 1000,
+            EnableCaching = true,
+            GridMode = GridRenderingMode.Rectangles,
+            UseEnhancedShapeRendering = true,
+            PerformanceLevel = PerformanceLevel.Balanced,
+            EnableGpuAcceleration = false,
+            EnableBatchRendering = true,
+            LayoutDebounceDelay = 150
+        };
     }
     
     /// <summary>

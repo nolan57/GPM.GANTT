@@ -129,6 +129,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simple theme support with hardcoded styles
 
 ## [Unreleased]
+## Unreleased
+- Improve task bar shadow visibility by insetting shape drawing bounds when a DropShadowEffect is active, so the blur renders within the element and is less likely to be clipped by ancestor visuals. This change affects only elements with shadows enabled and does not alter layout size.
 
 ### Upcoming Features (v3.0.0)
 - 🚧 Task dependencies with automatic layout

@@ -221,7 +221,15 @@ namespace GPM.Gantt
             // Default implementation uses rectangle rendering
             if (_gpuRenderingService != null)
             {
-                var bounds = new Rect(0, 0, ActualWidth, ActualHeight);
+                var padding = 0.0;
+                if (Effect is System.Windows.Media.Effects.DropShadowEffect dse && dse.Opacity > 0)
+                {
+                    // Provide room for blur to appear inside the element bounds
+                    padding = Math.Min(8.0, Math.Max(3.0, dse.BlurRadius * 0.5));
+                    padding = Math.Min(padding, Math.Min(ActualWidth / 4.0, ActualHeight / 4.0));
+                }
+
+                var bounds = new Rect(padding, padding, Math.Max(0, ActualWidth - 2 * padding), Math.Max(0, ActualHeight - 2 * padding));
                 _gpuRenderingService.RenderRectangle(
                     drawingContext, 
                     bounds, 
@@ -243,7 +251,15 @@ namespace GPM.Gantt
         /// <param name="drawingContext">Drawing context</param>
         protected virtual void RenderWithWpf(DrawingContext drawingContext)
         {
-            var bounds = new Rect(0, 0, ActualWidth, ActualHeight);
+            var padding = 0.0;
+            if (Effect is System.Windows.Media.Effects.DropShadowEffect dse && dse.Opacity > 0)
+            {
+                // Provide room for blur to appear inside the element bounds
+                padding = Math.Min(8.0, Math.Max(3.0, dse.BlurRadius * 0.5));
+                padding = Math.Min(padding, Math.Min(ActualWidth / 4.0, ActualHeight / 4.0));
+            }
+
+            var bounds = new Rect(padding, padding, Math.Max(0, ActualWidth - 2 * padding), Math.Max(0, ActualHeight - 2 * padding));
             
             // Draw background first
             if (Background != null && !Background.Equals(Brushes.Transparent))

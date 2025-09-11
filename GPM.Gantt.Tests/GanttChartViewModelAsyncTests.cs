@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,7 +9,7 @@ using GPM.Gantt.Services;
 
 namespace GPM.Gantt.Tests
 {
-    [TestClass]
+    // [TestClass] - Not needed in xUnit
     public class GanttChartViewModelAsyncTests
     {
         private class FakeGanttService : IGanttService
@@ -95,7 +95,7 @@ namespace GPM.Gantt.Tests
                 => Task.FromResult(tasks);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LoadTasksAsync_PopulatesCollections_NoAppDispatcher()
         {
             var fake = new FakeGanttService();
@@ -106,14 +106,16 @@ namespace GPM.Gantt.Tests
 
             await vm.LoadTasksAsync(CancellationToken.None);
 
-            Assert.AreEqual(2, vm.Tasks.Count);
-            Assert.AreEqual(2, vm.TaskModels.Count);
-            CollectionAssert.AreEquivalent(new[] { t1, t2 }, new System.Collections.ArrayList(vm.TaskModels));
-            Assert.AreEqual(vm.ProjectId, fake.LastProjectId);
-            Assert.AreEqual(string.Empty, vm.ErrorMessage);
+            Assert.Equal(2, vm.Tasks.Count);
+            Assert.Equal(2, vm.TaskModels.Count);
+            // CollectionAssert.AreEquivalent not available in xUnit, using Contains instead
+            Assert.Contains(t1, vm.TaskModels);
+            Assert.Contains(t2, vm.TaskModels);
+            Assert.Equal(vm.ProjectId, fake.LastProjectId);
+            Assert.Equal(string.Empty, vm.ErrorMessage);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LoadTasksAsync_Canceled_ThrowsAndDoesNotChange()
         {
             var fake = new FakeGanttService { DelayBeforeReturn = true, DelayMs = 100 };
@@ -123,37 +125,33 @@ namespace GPM.Gantt.Tests
             using var cts = new CancellationTokenSource(1);
             await Task.Delay(5);
 
-            try
+            // Using Assert.ThrowsAsync for async operations
+            await Assert.ThrowsAsync<OperationCanceledException>(async () =>
             {
                 await vm.LoadTasksAsync(cts.Token);
-                Assert.Fail("Expected OperationCanceledException");
-            }
-            catch (OperationCanceledException)
-            {
-                Assert.AreEqual(0, vm.Tasks.Count);
-                Assert.AreEqual(0, vm.TaskModels.Count);
-            }
+            });
+
+            Assert.Equal(0, vm.Tasks.Count);
+            Assert.Equal(0, vm.TaskModels.Count);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LoadTasksAsync_ServiceThrows_PropagatesAndDoesNotChange()
         {
             var fake = new FakeGanttService { ThrowOnGet = true };
             var vm = new GanttChartViewModel(new ValidationService(), fake) { ProjectId = Guid.NewGuid() };
 
-            try
+            // Using Assert.ThrowsAsync for async operations
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
                 await vm.LoadTasksAsync(CancellationToken.None);
-                Assert.Fail("Expected InvalidOperationException");
-            }
-            catch (InvalidOperationException)
-            {
-                Assert.AreEqual(0, vm.Tasks.Count);
-                Assert.AreEqual(0, vm.TaskModels.Count);
-            }
+            });
+
+            Assert.Equal(0, vm.Tasks.Count);
+            Assert.Equal(0, vm.TaskModels.Count);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddTaskAsync_WithProvidedModel_AddsAndSelects()
         {
             var fake = new FakeGanttService();
@@ -162,14 +160,14 @@ namespace GPM.Gantt.Tests
 
             var addedVm = await vm.AddTaskAsync(model, CancellationToken.None);
 
-            Assert.AreEqual(1, vm.Tasks.Count);
-            Assert.AreSame(addedVm, vm.SelectedTask);
-            Assert.AreEqual(1, vm.TaskModels.Count);
-            Assert.AreSame(model, vm.TaskModels[0]);
-            Assert.AreEqual(vm.ProjectId, fake.LastProjectId);
+            Assert.Equal(1, vm.Tasks.Count);
+            Assert.Same(addedVm, vm.SelectedTask);
+            Assert.Equal(1, vm.TaskModels.Count);
+            Assert.Same(model, vm.TaskModels[0]);
+            Assert.Equal(vm.ProjectId, fake.LastProjectId);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddTaskAsync_DefaultModel_UsesStartTimeAndSelects()
         {
             var fake = new FakeGanttService();
@@ -181,17 +179,17 @@ namespace GPM.Gantt.Tests
 
             var addedVm = await vm.AddTaskAsync(null, CancellationToken.None);
 
-            Assert.IsNotNull(addedVm);
-            Assert.AreEqual(1, vm.Tasks.Count);
-            Assert.AreSame(addedVm, vm.SelectedTask);
-            Assert.AreEqual(1, vm.TaskModels.Count);
+            Assert.NotNull(addedVm);
+            Assert.Equal(1, vm.Tasks.Count);
+            Assert.Same(addedVm, vm.SelectedTask);
+            Assert.Equal(1, vm.TaskModels.Count);
             var model = vm.TaskModels[0];
-            Assert.AreEqual(vm.StartTime, model.Start);
-            Assert.AreEqual(vm.StartTime.AddDays(1), model.End);
-            Assert.AreEqual(1, model.RowIndex);
+            Assert.Equal(vm.StartTime, model.Start);
+            Assert.Equal(vm.StartTime.AddDays(1), model.End);
+            Assert.Equal(1, model.RowIndex);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddTaskAsync_Canceled_ThrowsAndDoesNotChange()
         {
             var fake = new FakeGanttService { DelayDuringCreate = true, DelayMs = 100 };
@@ -200,34 +198,30 @@ namespace GPM.Gantt.Tests
             using var cts = new CancellationTokenSource(1);
             await Task.Delay(5);
 
-            try
+            // Using Assert.ThrowsAsync for async operations
+            await Assert.ThrowsAsync<OperationCanceledException>(async () =>
             {
                 await vm.AddTaskAsync(null, cts.Token);
-                Assert.Fail("Expected OperationCanceledException");
-            }
-            catch (OperationCanceledException)
-            {
-                Assert.AreEqual(0, vm.Tasks.Count);
-                Assert.AreEqual(0, vm.TaskModels.Count);
-            }
+            });
+
+            Assert.Equal(0, vm.Tasks.Count);
+            Assert.Equal(0, vm.TaskModels.Count);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task AddTaskAsync_ServiceThrows_PropagatesAndDoesNotChange()
         {
             var fake = new FakeGanttService { ThrowOnCreate = true };
             var vm = new GanttChartViewModel(new ValidationService(), fake) { ProjectId = Guid.NewGuid(), StartTime = DateTime.Today };
 
-            try
+            // Using Assert.ThrowsAsync for async operations
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
                 await vm.AddTaskAsync(null, CancellationToken.None);
-                Assert.Fail("Expected InvalidOperationException");
-            }
-            catch (InvalidOperationException)
-            {
-                Assert.AreEqual(0, vm.Tasks.Count);
-                Assert.AreEqual(0, vm.TaskModels.Count);
-            }
+            });
+
+            Assert.Equal(0, vm.Tasks.Count);
+            Assert.Equal(0, vm.TaskModels.Count);
         }
     }
 }

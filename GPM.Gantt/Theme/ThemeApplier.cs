@@ -1,7 +1,10 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using GPM.Gantt.Models;
+using GPM.Gantt.Services;
 
 namespace GPM.Gantt.Theme
 {
@@ -42,22 +45,50 @@ namespace GPM.Gantt.Theme
         {
             try
             {
+                // Prefer tokens for cross-component reusable parameters
+                var tokens = ThemeManager.Tokens.GetTaskBarTokens();
+
                 // Determine background based on status
                 Brush backgroundBrush = taskBar.Status switch
                 {
-                    GPM.Gantt.Models.TaskStatus.Completed => new SolidColorBrush(currentTheme.Task.CompletedColor),
-                    GPM.Gantt.Models.TaskStatus.InProgress => new SolidColorBrush(currentTheme.Task.InProgressColor),
-                    GPM.Gantt.Models.TaskStatus.Cancelled => new SolidColorBrush(currentTheme.Task.OverdueColor), // Use overdue color for cancelled
-                    GPM.Gantt.Models.TaskStatus.OnHold => new SolidColorBrush(currentTheme.Task.OverdueColor), // Use overdue color for on hold
-                    _ => new SolidColorBrush(currentTheme.Task.DefaultColor)
+                    GPM.Gantt.Models.TaskStatus.Completed => new SolidColorBrush(tokens.Colors.Completed),
+                    GPM.Gantt.Models.TaskStatus.InProgress => new SolidColorBrush(tokens.Colors.InProgress),
+                    GPM.Gantt.Models.TaskStatus.Cancelled => new SolidColorBrush(tokens.Colors.Overdue), // Use overdue color for cancelled
+                    GPM.Gantt.Models.TaskStatus.OnHold => new SolidColorBrush(tokens.Colors.Overdue), // Use overdue color for on hold
+                    _ => new SolidColorBrush(tokens.Colors.Default)
                 };
                 
                 taskBar.Background = backgroundBrush;
                 taskBar.Fill = backgroundBrush; // Make sure Fill is also set
-                taskBar.BorderBrush = new SolidColorBrush(currentTheme.Task.BorderColor);
-                taskBar.BorderThickness = new Thickness(currentTheme.Task.BorderThickness);
-                taskBar.Stroke = new SolidColorBrush(currentTheme.Task.BorderColor); // Make sure Stroke is also set
-                taskBar.StrokeThickness = currentTheme.Task.BorderThickness; // Make sure StrokeThickness is also set
+                taskBar.BorderBrush = new SolidColorBrush(tokens.Colors.Border);
+                taskBar.BorderThickness = new Thickness(tokens.Wireframe.BorderThickness);
+                taskBar.Stroke = new SolidColorBrush(tokens.Colors.Border); // Make sure Stroke is also set
+                taskBar.StrokeThickness = tokens.Wireframe.BorderThickness; // Make sure StrokeThickness is also set
+
+                // Toggleable shadow effect based on theme (prefer the theme instance passed in)
+                var taskTheme = currentTheme?.Task;
+                bool enableShadow = taskTheme?.EnableShadow ?? tokens.Shadow.EnableShadow;
+                var shadowColor = taskTheme?.ShadowColor ?? tokens.Shadow.Color;
+                var shadowBlur = taskTheme?.ShadowBlurRadius ?? tokens.Shadow.BlurRadius;
+                var shadowDepth = taskTheme?.ShadowDepth ?? tokens.Shadow.Depth;
+                var shadowOpacity = taskTheme?.ShadowOpacity ?? tokens.Shadow.Opacity;
+                var shadowDirection = taskTheme?.ShadowDirection ?? tokens.Shadow.Direction;
+
+                if (enableShadow)
+                {
+                    taskBar.Effect = new DropShadowEffect
+                    {
+                        Color = shadowColor,
+                        BlurRadius = shadowBlur,
+                        ShadowDepth = shadowDepth,
+                        Opacity = shadowOpacity,
+                        Direction = shadowDirection
+                    };
+                }
+                else
+                {
+                    taskBar.Effect = null;
+                }
                 
                 // Set corner radius if supported
                 // Note: Directly setting CornerRadius on GanttTaskBar may not work as it's a FrameworkElement

@@ -507,3 +507,26 @@ pluginService.RegisterPlugin(new LineAnnotationPlugin());
 ```
 
 These advanced configuration options provide powerful capabilities for creating sophisticated Gantt chart visualizations.
+
+## Design tokens provider service
+GPM.Gantt consolidates theme-driven parameters into a reusable service that provides strongly-typed token sets per feature area (task bars, grid, time scale, dependency lines, annotations). This enables consistent configuration and easy reuse.
+
+Concept
+- Service interface: IDesignTokenService
+- Default implementation: DesignTokenService
+- Each token group encapsulates normalized values (colors, brushes, thicknesses, radii, shadow parameters, etc.)
+
+Configuration
+- You can replace the default implementation with a custom provider if you need dynamic sources (e.g., remote palette, A/B tests).
+- Keep tokens stable and typed; UI code should not directly depend on your theme schema.
+
+Usage
+- Inject or access IDesignTokenService where rendering or styling decisions are made.
+- Query appropriate token groups (e.g., GetTaskBarTokens) and apply them to UI elements.
+- Re-query on theme changes to keep visuals in sync.
+
+Customization
+- Add new token groups to support new components. Implement corresponding getters on IDesignTokenService and provide concrete values in your provider.
+
+Benefits
+- Cross-component reuse, separation of concerns, runtime flexibility, and easier testing.

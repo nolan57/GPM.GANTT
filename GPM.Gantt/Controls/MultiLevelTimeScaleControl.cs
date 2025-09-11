@@ -129,7 +129,13 @@ namespace GPM.Gantt.Controls
             }
             else
             {
+                // Temporarily unsubscribe from events to prevent issues during update
+                UnsubscribeFromTickEvents(_currentTimeScale);
+                
                 _renderingService.UpdateTimeScale(_currentTimeScale, Configuration, context);
+                
+                // Re-subscribe to events after update
+                SubscribeToTickEvents(_currentTimeScale);
             }
 
             // Subscribe to expand/collapse events from ticks
@@ -148,6 +154,7 @@ namespace GPM.Gantt.Controls
                         {
                             if (canvasChild is MultiLevelTimeScaleTick tick)
                             {
+                                // Properly manage event subscriptions to avoid duplicates
                                 tick.ExpandRequested -= OnTickExpandRequested;
                                 tick.CollapseRequested -= OnTickCollapseRequested;
                                 tick.ExpandRequested += OnTickExpandRequested;
@@ -161,32 +168,87 @@ namespace GPM.Gantt.Controls
 
         private void OnTickExpandRequested(object? sender, TimeSegmentExpandEventArgs e)
         {
-            // Expand the time segment
-            _renderingService.ExpandTimeSegment(_currentTimeScale, e.SegmentStart, e.ToLevel);
+            // Temporarily unsubscribe to prevent recursive calls during refresh
+            if (_currentTimeScale != null)
+            {
+                UnsubscribeFromTickEvents(_currentTimeScale);
+            }
             
-            // Update configuration
-            Configuration.ExpandSegment(e.SegmentStart, e.FromLevel, e.ToLevel);
-            
-            // Refresh display
-            RefreshTimeScale();
-            
-            // Notify external listeners
-            TimeSegmentExpanded?.Invoke(this, e);
+            try
+            {
+                // Expand the time segment
+                _renderingService.ExpandTimeSegment(_currentTimeScale, e.SegmentStart, e.ToLevel);
+                
+                // Update configuration
+                Configuration.ExpandSegment(e.SegmentStart, e.FromLevel, e.ToLevel);
+                
+                // Refresh display
+                RefreshTimeScale();
+                
+                // Notify external listeners
+                TimeSegmentExpanded?.Invoke(this, e);
+            }
+            finally
+            {
+                // Re-subscribe to events
+                if (_currentTimeScale != null)
+                {
+                    SubscribeToTickEvents(_currentTimeScale);
+                }
+            }
         }
 
         private void OnTickCollapseRequested(object? sender, TimeSegmentCollapseEventArgs e)
         {
-            // Collapse the time segment
-            _renderingService.CollapseTimeSegment(_currentTimeScale, e.SegmentStart);
+            // Temporarily unsubscribe to prevent recursive calls during refresh
+            if (_currentTimeScale != null)
+            {
+                UnsubscribeFromTickEvents(_currentTimeScale);
+            }
             
-            // Update configuration
-            Configuration.CollapseSegment(e.SegmentStart);
-            
-            // Refresh display
-            RefreshTimeScale();
-            
-            // Notify external listeners
-            TimeSegmentCollapsed?.Invoke(this, e);
+            try
+            {
+                // Collapse the time segment
+                _renderingService.CollapseTimeSegment(_currentTimeScale, e.SegmentStart);
+                
+                // Update configuration
+                Configuration.CollapseSegment(e.SegmentStart);
+                
+                // Refresh display
+                RefreshTimeScale();
+                
+                // Notify external listeners
+                TimeSegmentCollapsed?.Invoke(this, e);
+            }
+            finally
+            {
+                // Re-subscribe to events
+                if (_currentTimeScale != null)
+                {
+                    SubscribeToTickEvents(_currentTimeScale);
+                }
+            }
+        }
+
+        private void UnsubscribeFromTickEvents(FrameworkElement timeScale)
+        {
+            if (timeScale is Grid grid)
+            {
+                foreach (UIElement child in grid.Children)
+                {
+                    if (child is Canvas canvas)
+                    {
+                        foreach (UIElement canvasChild in canvas.Children)
+                        {
+                            if (canvasChild is MultiLevelTimeScaleTick tick)
+                            {
+                                tick.ExpandRequested -= OnTickExpandRequested;
+                                tick.CollapseRequested -= OnTickCollapseRequested;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public void ExpandTimeSegment(DateTime segmentStart, ExtendedTimeUnit toLevel)

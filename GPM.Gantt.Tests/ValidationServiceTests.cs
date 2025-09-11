@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using GPM.Gantt.Services;
 using GPM.Gantt.Models;
 using System;
@@ -10,18 +10,16 @@ namespace GPM.Gantt.Tests
     /// <summary>
     /// Unit tests for the ValidationService class.
     /// </summary>
-    [TestClass]
     public class ValidationServiceTests
     {
         private ValidationService _validationService = null!;
         
-        [TestInitialize]
-        public void Setup()
+        public ValidationServiceTests()
         {
             _validationService = new ValidationService();
         }
         
-        [TestMethod]
+        [Fact]
         public void ValidateTask_ValidTask_ReturnsSuccess()
         {
             // Arrange
@@ -37,22 +35,22 @@ namespace GPM.Gantt.Tests
             var result = _validationService.ValidateTask(task);
             
             // Assert
-            Assert.IsTrue(result.IsValid);
-            Assert.AreEqual(0, result.Errors.Count);
+            Assert.True(result.IsValid);
+            Assert.Equal(0, result.Errors.Count);
         }
         
-        [TestMethod]
+        [Fact]
         public void ValidateTask_NullTask_ReturnsError()
         {
             // Act
             var result = _validationService.ValidateTask(null!);
             
             // Assert
-            Assert.IsFalse(result.IsValid);
-            Assert.IsTrue(result.Errors.Any(e => e.Contains("cannot be null")));
+            Assert.False(result.IsValid);
+            Assert.True(result.Errors.Any(e => e.Contains("cannot be null")));
         }
         
-        [TestMethod]
+        [Fact]
         public void ValidateTimeRange_ValidRange_ReturnsSuccess()
         {
             // Arrange
@@ -63,10 +61,10 @@ namespace GPM.Gantt.Tests
             var result = _validationService.ValidateTimeRange(start, end);
             
             // Assert
-            Assert.IsTrue(result.IsValid);
+            Assert.True(result.IsValid);
         }
         
-        [TestMethod]
+        [Fact]
         public void ValidateTimeRange_EndBeforeStart_ReturnsError()
         {
             // Arrange
@@ -77,11 +75,11 @@ namespace GPM.Gantt.Tests
             var result = _validationService.ValidateTimeRange(start, end);
             
             // Assert
-            Assert.IsFalse(result.IsValid);
-            Assert.IsTrue(result.Errors.Any(e => e.Contains("Start time must be before")));
+            Assert.False(result.IsValid);
+            Assert.True(result.Errors.Any(e => e.Contains("Start time must be before")));
         }
         
-        [TestMethod]
+        [Fact]
         public void ValidateTaskCollection_ValidTasks_ReturnsSuccess()
         {
             // Arrange
@@ -95,10 +93,10 @@ namespace GPM.Gantt.Tests
             var result = _validationService.ValidateTaskCollection(tasks);
             
             // Assert
-            Assert.IsTrue(result.IsValid);
+            Assert.True(result.IsValid);
         }
         
-        [TestMethod]
+        [Fact]
         public void ValidateTaskCollection_OverlappingTasks_ReturnsError()
         {
             // Arrange
@@ -112,11 +110,11 @@ namespace GPM.Gantt.Tests
             var result = _validationService.ValidateTaskCollection(tasks);
             
             // Assert
-            Assert.IsFalse(result.IsValid);
-            Assert.IsTrue(result.Errors.Any(e => e.Contains("overlap")));
+            Assert.False(result.IsValid);
+            Assert.True(result.Errors.Any(e => e.Contains("overlap")));
         }
         
-        [TestMethod]
+        [Fact]
         public void ValidateTaskDependencies_CircularDependency_ReturnsError()
         {
             // Arrange
@@ -143,8 +141,8 @@ namespace GPM.Gantt.Tests
             var result = _validationService.ValidateTaskDependencies(task1, allTasks);
             
             // Assert
-            Assert.IsFalse(result.IsValid);
-            Assert.IsTrue(result.Errors.Any(e => e.Contains("Circular dependency")));
+            Assert.False(result.IsValid);
+            Assert.True(result.Errors.Any(e => e.Contains("Circular dependency")));
         }
     }
 }

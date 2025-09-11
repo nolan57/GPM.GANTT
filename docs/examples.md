@@ -1372,3 +1372,35 @@ public class CompleteAdvancedProjectViewModel : ViewModelBase
 ```
 
 These advanced examples demonstrate the powerful new capabilities in GPM.Gantt v2.1.0, showcasing how the plugin system, multi-level time scales, and expandable segments can be combined to create sophisticated project management interfaces.
+
+## Using the Design Token Service in code
+The snippet below demonstrates how to fetch task bar tokens and apply them to a GanttTaskBar.
+
+Example (C#)
+```csharp
+// Acquire the token service (resolve according to your app’s composition root)
+IDesignTokenService tokens = new DesignTokenService(themeManager);
+var taskTokens = tokens.GetTaskBarTokens();
+
+// Apply to a task bar (simplified)
+var taskBar = new GanttTaskBar();
+taskBar.Fill = taskTokens.FillBrush;
+taskBar.Stroke = taskTokens.StrokeBrush;
+taskBar.StrokeThickness = taskTokens.StrokeThickness;
+
+// Optional shadow
+if (taskTokens.Shadow.EnableShadow)
+{
+    taskBar.Effect = new DropShadowEffect
+    {
+        Color = taskTokens.Shadow.Color,
+        BlurRadius = taskTokens.Shadow.BlurRadius,
+        Direction = taskTokens.Shadow.Direction,
+        ShadowDepth = taskTokens.Shadow.Depth,
+        Opacity = taskTokens.Shadow.Opacity
+    };
+}
+```
+Notes
+- Token objects are normalized; values are ready to apply to WPF elements.
+- When the theme changes, re-fetch tokens and re-apply to affected visuals.

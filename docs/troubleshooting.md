@@ -705,4 +705,10 @@ if (expansion.StartTime < ganttContainer.StartTime ||
 }
 ```
 
+## Design Token Service troubleshooting
+- Tokens don’t update after theme switch: re-fetch from IDesignTokenService when ThemeManager changes the active theme.
+- Inconsistent visuals across components: ensure all components consume tokens from the same service instance and token group.
+- Custom provider returns null/partial values: supply sensible defaults in your implementation and keep token types consistent.
+- Unit tests flaky due to theme dependencies: mock IDesignTokenService with deterministic values.
+
 These advanced troubleshooting techniques help resolve issues with the new GPM.Gantt v2.1.0 features.

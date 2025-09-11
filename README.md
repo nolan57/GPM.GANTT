@@ -42,8 +42,8 @@ Install-Package GPM.Gantt
 
 ### Build from Source
 ```bash
-git clone https://github.com/yourorg/GPM.git
-cd GPM
+git clone https://github.com/yourorg/GPM.GANTT.git
+cd GPM.GANTT
 dotnet build
 ```
 
@@ -351,3 +351,28 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 *GPM.Gantt - Enterprise-grade project visualization for modern applications.*
+
+
+## Design tokens as a service-layer parameter provider
+GPM.Gantt exposes cross-component reusable design tokens via a dedicated service that acts as a strongly-typed parameter provider. Instead of UI code pulling raw values from theme objects, components depend on IDesignTokenService to obtain normalized, typed token sets.
+
+Key ideas
+- Single source of truth for visual/behavioral parameters shared by multiple subsystems (task bars, grid, time scale, dependencies, annotations).
+- Strong typing and normalization keep UI code simple and consistent.
+- Runtime theme switching: consumers can re-query the service for updated tokens.
+- Easy testing: mock token providers in unit tests for deterministic rendering.
+
+Where to look
+- Interface: D\:\Documents\CS\GPM\GPM.Gantt\Services\IDesignTokenService.cs
+- Implementation: D\:\Documents\CS\GPM\GPM.Gantt\Services\DesignTokenService.cs
+- Example consumer: D\:\Documents\CS\GPM\GPM.Gantt\Theme\ThemeApplier.cs
+
+How to use
+- Retrieve tokens for a feature area (e.g., task bars) via IDesignTokenService.
+- Apply tokens to controls/paths (colors, stroke thicknesses, shadows, etc.).
+- On theme changes, refresh tokens by re-calling the service.
+
+Outcome
+- Cleaner separation between theming and rendering.
+- Reusable, consistent parameters across all components.
+- Faster iteration and safer theme evolution.

@@ -458,3 +458,8 @@ public partial class MinimalExample : Window
 ```
 
 This troubleshooting guide should help you resolve most common issues with the GPM.Gantt component. For additional support, refer to the project documentation or create an issue on GitHub.
+
+## Shadows are not visible or look clipped
+- Ensure your current theme has Task.Shadow.EnableShadow = true (the Modern theme enables this by default).
+- GanttShapeBase insets the drawn shape slightly when a DropShadowEffect is active so the blur can render within the element, reducing clipping. This is automatic and only affects shapes with shadows.
+- If a task bar is near the edge of a ScrollViewer viewport, part of the blur can still be clipped by the viewport. This is expected in WPF. Scroll the item further into view or reduce BlurRadius for that case.

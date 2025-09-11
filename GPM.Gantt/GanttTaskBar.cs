@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using GPM.Gantt.Models;
+using System.Windows.Input;
 
 namespace GPM.Gantt
 {
@@ -338,6 +339,120 @@ namespace GPM.Gantt
         #endregion
 
         #region Event Raising Methods
+
+        #region Mouse Interaction (Drag & Double-Click)
+        private bool _isMouseCaptured;
+        private bool _isDragging;
+        private Point _dragStartPoint;
+
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonDown(e);
+
+            // Respect interaction flags
+            if (!IsInteractive)
+                return;
+
+            // Double-click to edit
+            if (e.ClickCount == 2)
+            {
+                var container = FindGanttContainer();
+                var pos = container != null ? e.GetPosition(container) : e.GetPosition(this);
+                OnTaskDoubleClicked(new TaskBarEventArgs(pos));
+                e.Handled = true;
+                return;
+            }
+
+            // Prepare for drag
+            if (IsDragDropEnabled)
+            {
+                _isMouseCaptured = CaptureMouse();
+                _isDragging = false;
+                _dragStartPoint = e.GetPosition(this);
+                e.Handled = _isMouseCaptured;
+            }
+        }
+
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+
+            if (!_isMouseCaptured || !IsInteractive || !IsDragDropEnabled)
+                return;
+
+            var currentPosLocal = e.GetPosition(this);
+            if (!_isDragging)
+            {
+                var dx = Math.Abs(currentPosLocal.X - _dragStartPoint.X);
+                var dy = Math.Abs(currentPosLocal.Y - _dragStartPoint.Y);
+                if (dx >= SystemParameters.MinimumHorizontalDragDistance ||
+                    dy >= SystemParameters.MinimumVerticalDragDistance)
+                {
+                    _isDragging = true;
+
+                    var container = FindGanttContainer();
+                    var startPos = container != null
+                        ? PointToContainer(_dragStartPoint, container)
+                        : _dragStartPoint;
+
+                    OnDragStarted(new TaskBarDragEventArgs(startPos));
+                }
+            }
+            else
+            {
+                var container = FindGanttContainer();
+                var pos = container != null ? e.GetPosition(container) : currentPosLocal;
+                OnDragging(new TaskBarDragEventArgs(pos));
+            }
+
+            e.Handled = true;
+        }
+
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonUp(e);
+
+            if (_isMouseCaptured)
+            {
+                var wasDragging = _isDragging;
+                _isDragging = false;
+                _isMouseCaptured = false;
+                ReleaseMouseCapture();
+
+                if (IsInteractive && IsDragDropEnabled && wasDragging)
+                {
+                    var container = FindGanttContainer();
+                    var pos = container != null ? e.GetPosition(container) : e.GetPosition(this);
+                    OnDragCompleted(new TaskBarDragEventArgs(pos));
+                }
+
+                e.Handled = true;
+            }
+        }
+
+        protected override void OnLostMouseCapture(MouseEventArgs e)
+        {
+            base.OnLostMouseCapture(e);
+            _isMouseCaptured = false;
+            _isDragging = false;
+        }
+
+        private Point PointToContainer(Point localPoint, GanttContainer container)
+        {
+            return this.TranslatePoint(localPoint, container);
+        }
+
+        private GanttContainer? FindGanttContainer()
+        {
+            DependencyObject? parent = this;
+            while (parent != null)
+            {
+                if (parent is GanttContainer gc) return gc;
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+            return null;
+        }
+        #endregion
 
         /// <summary>
         /// Raises the TaskDoubleClicked event.

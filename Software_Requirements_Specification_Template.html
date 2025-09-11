@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Requirements Specification Template</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-main);
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+            margin: 2rem 0 1rem 0;
+        }
+
+        h3 {
+            color: var(--dark-color);
+            margin: 1.5rem 0 0.5rem 0;
+        }
+
+        h4 {
+            color: var(--secondary-color);
+            margin: 1rem 0 0.5rem 0;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        ul, ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background-color: white;
+            box-shadow: var(--shadow);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--light-color);
+        }
+
+        tr:hover {
+            background-color: #f1f7fd;
+        }
+
+        .example {
+            background-color: #e8f4fc;
+            border-left: 4px solid var(--secondary-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .quote {
+            background-color: #fef9e7;
+            border-left: 4px solid var(--warning-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+
+        .priority-high {
+            background-color: #fadbd8;
+            color: #c0392b;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .priority-medium {
+            background-color: #fdebd0;
+            color: #d35400;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .priority-low {
+            background-color: #d5f5e3;
+            color: #27ae60;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .section {
+            background-color: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .feature-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-list li:before {
+            content: "☐";
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .approval-section {
+            background-color: #e8f8f5;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .approval-item {
+            margin-bottom: 1rem;
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background: #ddd;
+            margin: 2rem 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--dark-color);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .section {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Software Requirements Specification Template</h1>
+            <p>For Non-Technical Users</p>
+        </header>
+
+        <main>
+            <section class="section">
+                <h2>Project Information</h2>
+                
+                <p><strong>Project Name:</strong> [Enter the name of your project]</p>
+                <p><strong>Document Version:</strong> [Enter version number, e.g., 1.0]</p>
+                <p><strong>Prepared By:</strong> [Your name or team name]</p>
+                <p><strong>Date:</strong> [Enter date]</p>
+                <p><strong>Approved By:</strong> [Name of approver, if applicable]</p>
+            </section>
+
+            <section class="section">
+                <h2>1. Introduction</h2>
+                
+                <h3>1.1 Purpose</h3>
+                <div class="quote">
+                    Describe in simple terms what this software will do. What problem does it solve for the users?
+                </div>
+                <div class="example">
+                    This document describes what we want our online store website to do - let customers browse products, add them to a shopping cart, and complete purchases securely.
+                </div>
+                
+                <h3>1.2 Scope</h3>
+                <div class="quote">
+                    Who will use this software? Where will it be used? What are the main benefits?
+                </div>
+                <div class="example">
+                    Our online store will be used by customers shopping from home or work. They'll be able to shop 24/7 from any device with internet, and we'll save time by not needing a physical store.
+                </div>
+                
+                <h3>1.3 Definitions, Acronyms, and Abbreviations</h3>
+                <div class="quote">
+                    Explain any technical terms in simple language.
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Term</th>
+                            <th>Definition</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>User</td>
+                            <td>A person who will use the software</td>
+                        </tr>
+                        <tr>
+                            <td>Dashboard</td>
+                            <td>The main screen that shows important information at a glance</td>
+                        </tr>
+                        <tr>
+                            <td>Database</td>
+                            <td>A digital filing cabinet that stores all our information</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>1.4 References</h3>
+                <div class="quote">
+                    List any documents or sources that were used to create this document.
+                </div>
+                <div class="example">
+                    <ul>
+                        <li>Our existing paper catalog</li>
+                        <li>Feedback from customers about our current shopping process</li>
+                        <li>Examples of competitor websites we like</li>
+                    </ul>
+                </div>
+                
+                <h3>1.5 Overview</h3>
+                <div class="quote">
+                    Briefly describe what each section of this document covers.
+                </div>
+                <div class="example">
+                    This document explains everything we want our software to do. It starts with what the software is for, then describes who will use it, and finally lists all the specific features we need.
+                </div>
+            </section>
+
+            <hr>
+
+            <section class="section">
+                <h2>2. Overall Description</h2>
+                
+                <h3>2.1 Product Perspective</h3>
+                <div class="quote">
+                    How does this software fit into the bigger picture? Will it work with other systems?
+                </div>
+                <div class="example">
+                    Our customer website will be separate from our internal systems for now. Customers can use it without needing to log into anything else, but eventually we'd like to connect it to our inventory system.
+                </div>
+                
+                <h3>2.2 Product Functions</h3>
+                <div class="quote">
+                    List the main things the software will do in simple terms.
+                </div>
+                <ol>
+                    <li>[Function 1 - e.g., Show a catalog of all our products]</li>
+                    <li>[Function 2 - e.g., Let customers save items to a shopping cart]</li>
+                    <li>[Function 3 - e.g., Process payments securely]</li>
+                    <li>[Function 4 - e.g., Send order confirmations by email]</li>
+                </ol>
+                
+                <h3>2.3 User Characteristics</h3>
+                <div class="quote">
+                    Who will use this software? What is their technical level?
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User Type</th>
+                            <th>Description</th>
+                            <th>Technical Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Customer</td>
+                            <td>Person buying our products</td>
+                            <td>Basic computer skills</td>
+                        </tr>
+                        <tr>
+                            <td>Store Manager</td>
+                            <td>Person managing products and orders</td>
+                            <td>Comfortable with business software</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>2.4 Constraints</h3>
+                <div class="quote">
+                    What limitations might affect the software? (Budget, time, technology, etc.)
+                </div>
+                <div class="example">
+                    <ul>
+                        <li>Must be ready for the holiday season</li>
+                        <li>Budget of $25,000 for initial version</li>
+                        <li>Must work on phones, tablets, and computers</li>
+                        <li>All customer information must be kept private</li>
+                    </ul>
+                </div>
+                
+                <h3>2.5 Assumptions and Dependencies</h3>
+                <div class="quote">
+                    What do you assume to be true? What does this software depend on?
+                </div>
+                <div class="example">
+                    <ul>
+                        <li>Customers will have credit cards or PayPal accounts</li>
+                        <li>We'll have reliable internet service</li>
+                        <li>We can hire a payment processing company</li>
+                    </ul>
+                </div>
+            </section>
+
+            <hr>
+
+            <section class="section">
+                <h2>3. Specific Requirements</h2>
+                
+                <h3>3.1 Functional Requirements</h3>
+                <div class="quote">
+                    These are the specific features the software must have. Use simple language and include examples.
+                </div>
+                
+                <h4>3.1.1 User Accounts</h4>
+                <p><strong>Description:</strong> People should be able to create accounts and log in to save their information.</p>
+                
+                <ul class="feature-list">
+                    <li>People can create accounts with email and password</li>
+                    <li>People can log in to their accounts</li>
+                    <li>People can reset their password if they forget it</li>
+                    <li>The system sends a confirmation email when they sign up</li>
+                </ul>
+                
+                <div class="example">
+                    When someone wants to buy something, they can create an account with their email address. They'll get an email to confirm their address, then create a password. Next time they visit, they just enter their email and password to access their saved information.
+                </div>
+                
+                <h4>3.1.2 Product Catalog</h4>
+                <p><strong>Description:</strong> Customers need to browse our products easily.</p>
+                
+                <ul class="feature-list">
+                    <li>Show all products on categorized pages</li>
+                    <li>Let customers search for products by name or description</li>
+                    <li>Let customers filter products by category, price, or features</li>
+                    <li>Show clear photos and descriptions for each product</li>
+                    <li>Show prices clearly, including any discounts</li>
+                </ul>
+                
+                <div class="example">
+                    A customer visits our "Home & Garden" section and sees all our gardening tools. They can sort by price or search for "pruning shears" to find exactly what they want. Each tool has several photos and a clear description of what it does.
+                </div>
+                
+                <h4>3.1.3 Shopping Cart</h4>
+                <p><strong>Description:</strong> Customers need to save items while they shop and checkout when ready.</p>
+                
+                <ul class="feature-list">
+                    <li>Add items to a virtual shopping cart</li>
+                    <li>See what's in the cart at any time</li>
+                    <li>Change quantities or remove items</li>
+                    <li>See the total cost including tax and shipping</li>
+                    <li>Save the cart to finish shopping later (for logged-in users)</li>
+                </ul>
+                
+                <div class="example">
+                    A customer adds a $25 plant and a $15 watering can to their cart. They can see both items listed with the prices, and the total shows $40 plus $5 shipping. If they change their mind about the watering can, they can remove it before checking out.
+                </div>
+                
+                <h3>3.2 Non-Functional Requirements</h3>
+                <div class="quote">
+                    These describe how well the software should work, not what it should do.
+                </div>
+                
+                <h4>3.2.1 Performance</h4>
+                <div class="quote">
+                    How fast should the software be?
+                </div>
+                <ul>
+                    <li>The website should load quickly (under 3 seconds)</li>
+                    <li>Searching for products should be instant (under 1 second)</li>
+                    <li>The system should handle many customers shopping at once</li>
+                </ul>
+                
+                <h4>3.2.2 Security</h4>
+                <div class="quote">
+                    How should the software protect sensitive information?
+                </div>
+                <ul>
+                    <li>Customer passwords should be kept secret and secure</li>
+                    <li>Customer information should be backed up regularly</li>
+                    <li>Only authorized people should access order information</li>
+                    <li>All communication should be encrypted (like putting it in a sealed envelope)</li>
+                </ul>
+                
+                <h4>3.2.3 Usability</h4>
+                <div class="quote">
+                    How easy should the software be to use?
+                </div>
+                <ul>
+                    <li>First-time visitors should understand how to shop within 2 minutes</li>
+                    <li>The website should be easy to navigate with clear buttons</li>
+                    <li>Error messages should explain what went wrong in plain language</li>
+                    <li>The website should work on phones, tablets, and computers</li>
+                </ul>
+                
+                <h4>3.2.4 Reliability</h4>
+                <div class="quote">
+                    How consistently should the software work?
+                </div>
+                <ul>
+                    <li>The website should be available for customers to shop 99% of the time</li>
+                    <li>Customer orders and information should never be lost</li>
+                    <li>If something goes wrong, the system should fix itself or alert us</li>
+                </ul>
+                
+                <h4>3.2.5 Compatibility</h4>
+                <div class="quote">
+                    What devices or systems should the software work with?
+                </div>
+                <ul>
+                    <li>Must work on popular web browsers (Chrome, Firefox, Safari, Edge)</li>
+                    <li>Must work well on mobile phones and tablets</li>
+                    <li>Should work on Windows, Mac, and Linux computers</li>
+                </ul>
+            </section>
+
+            <hr>
+
+            <section class="section">
+                <h2>4. External Interface Requirements</h2>
+                
+                <h3>4.1 User Interfaces</h3>
+                <div class="quote">
+                    Describe what the screens should look like in general terms.
+                </div>
+                <div class="example">
+                    The website should look clean and professional. Customers should see our logo at the top, easy navigation to product categories across the top, a search bar, and their shopping cart in the upper right corner.
+                </div>
+                
+                <h3>4.2 Hardware Interfaces</h3>
+                <div class="quote">
+                    What hardware will the software need to work with?
+                </div>
+                <div class="example">
+                    Standard computer, tablet, or phone with internet connection. No special scanners or card readers needed for customers.
+                </div>
+                
+                <h3>4.3 Software Interfaces</h3>
+                <div class="quote">
+                    What other software systems will this need to work with?
+                </div>
+                <div class="example">
+                    The website will connect to a payment company to process credit cards and PayPal payments.
+                </div>
+                
+                <h3>4.4 Communications Interfaces</h3>
+                <div class="quote">
+                    How will the software communicate with users or other systems?
+                </div>
+                <div class="example">
+                    Automatic emails for order confirmations, shipping updates, and password resets.
+                </div>
+            </section>
+
+            <hr>
+
+            <section class="section">
+                <h2>5. Other Requirements</h2>
+                
+                <h3>5.1 Legal Requirements</h3>
+                <div class="quote">
+                    Any legal or regulatory requirements?
+                </div>
+                <div class="example">
+                    Must follow privacy laws to protect customer information
+                </div>
+                
+                <h3>5.2 Standards Compliance</h3>
+                <div class="quote">
+                    Any industry standards to follow?
+                </div>
+                <div class="example">
+                    Website should be accessible to people with disabilities
+                </div>
+            </section>
+
+            <hr>
+
+            <section class="section">
+                <h2>6. Prioritization of Requirements</h2>
+                
+                <div class="quote">
+                    Use this table to indicate the priority of each requirement. This helps developers understand what must be included in the first version.
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Requirement ID</th>
+                            <th>Description</th>
+                            <th>Priority</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>FR-001</td>
+                            <td>User accounts</td>
+                            <td><span class="priority-high">High</span></td>
+                            <td>Essential for repeat customers</td>
+                        </tr>
+                        <tr>
+                            <td>FR-002</td>
+                            <td>Product catalog</td>
+                            <td><span class="priority-high">High</span></td>
+                            <td>Core shopping feature</td>
+                        </tr>
+                        <tr>
+                            <td>FR-003</td>
+                            <td>Shopping cart</td>
+                            <td><span class="priority-high">High</span></td>
+                            <td>Required for purchases</td>
+                        </tr>
+                        <tr>
+                            <td>FR-004</td>
+                            <td>Mobile compatibility</td>
+                            <td><span class="priority-medium">Medium</span></td>
+                            <td>Important but website works for now</td>
+                        </tr>
+                        <tr>
+                            <td>NFR-001</td>
+                            <td>Fast loading</td>
+                            <td><span class="priority-high">High</span></td>
+                            <td>Customers will leave if slow</td>
+                        </tr>
+                        <tr>
+                            <td>NFR-002</td>
+                            <td>Payment security</td>
+                            <td><span class="priority-high">High</span></td>
+                            <td>Critical for customer trust</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <hr>
+
+            <section class="section">
+                <h2>7. Future Enhancements (Optional)</h2>
+                
+                <div class="quote">
+                    Features that might be added in future versions.
+                </div>
+                <div class="example">
+                    <ul>
+                        <li>Customer reviews and ratings</li>
+                        <li>Wish lists for customers</li>
+                        <li>Gift wrapping options</li>
+                        <li>Advanced reporting for business insights</li>
+                    </ul>
+                </div>
+            </section>
+
+            <hr>
+
+            <section class="section">
+                <h2>8. Glossary</h2>
+                
+                <div class="quote">
+                    Define all technical terms used in this document.
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Term</th>
+                            <th>Definition</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>[Term]</td>
+                            <td>[Simple definition]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <hr>
+
+            <section class="section">
+                <h2>9. Approval</h2>
+                
+                <div class="quote">
+                    Section for stakeholders to sign off on the requirements.
+                </div>
+                
+                <div class="approval-section">
+                    <div class="approval-item">
+                        <h3>Prepared by:</h3>
+                        <p>Name: _________________________</p>
+                        <p>Title: _________________________</p>
+                        <p>Date: _________________________</p>
+                    </div>
+                    
+                    <div class="approval-item">
+                        <h3>Reviewed by:</h3>
+                        <p>Name: _________________________</p>
+                        <p>Title: _________________________</p>
+                        <p>Date: _________________________</p>
+                    </div>
+                    
+                    <div class="approval-item">
+                        <h3>Approved by:</h3>
+                        <p>Name: _________________________</p>
+                        <p>Title: _________________________</p>
+                        <p>Date: _________________________</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Software Requirements Specification Template for Non-Technical Users</p>
+        </footer>
+    </div>
+</body>
+</html>

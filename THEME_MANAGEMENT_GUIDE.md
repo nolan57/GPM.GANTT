@@ -374,3 +374,46 @@ Successfully implemented an enterprise-grade theme management system for the Gan
 ✅ **Well-Tested**: Comprehensive unit test coverage  
 
 This theme management system significantly enhances the professionalism and user experience of the Gantt chart component, making it more suitable for enterprise-level applications. The latest bug fixes and performance optimizations further improve system stability and reliability, while the integration with v2.1.0 advanced features provides even more customization options.
+
+### Task bar shadows behavior
+When a theme enables task shadows (e.g., Modern theme), elements that derive from GanttShapeBase and use a DropShadowEffect are drawn slightly inset inside their bounds so the blur can render within the element and avoid being clipped by ancestor containers. This inset is automatic, small (a few pixels), and only applies when the shadow is active. It does not change layout/arranged size.
+
+Tips:
+- To see shadows, use a theme with Task.Shadow.EnableShadow = true (Modern enables this by default).
+- Very large blur radii near viewport edges can still appear partially clipped by the scroll viewport, which is expected.
+
+
+### Design tokens as a service-layer parameter provider
+Design tokens in GPM.Gantt are exposed through a dedicated service that acts as a strongly-typed parameter provider for multiple subsystems (task bars, grid, time scale, dependencies, annotations). This pattern centralizes style and behavioral parameters and makes them reusable across components.
+
+What it is
+- A single source of truth for visual and behavioral parameters used by multiple components.
+- Implemented as a service (IDesignTokenService) with concrete implementation DesignTokenService.
+- Produces normalized, typed token objects that downstream features can consume without knowing theme internals.
+
+Why this matters
+- Cross-component reuse: the same token group (e.g., task bar) can be applied in renderers, managers, and controls consistently.
+- Consistency and decoupling: UI code depends on the service, not on theme object internals.
+- Runtime theme switching: consumers can re-fetch tokens when the active theme changes.
+- Testability: tokens can be mocked in unit tests for deterministic rendering assertions.
+
+Where it lives in the codebase
+- Interface: <mcfile name="IDesignTokenService.cs" path="D:\Documents\CS\GPM\GPM.Gantt\Services\IDesignTokenService.cs"></mcfile>
+- Implementation: <mcfile name="DesignTokenService.cs" path="D:\Documents\CS\GPM\GPM.Gantt\Services\DesignTokenService.cs"></mcfile>
+- Typical consumer: <mcfile name="ThemeApplier.cs" path="D:\Documents\CS\GPM\GPM.Gantt\Theme\ThemeApplier.cs"></mcfile>
+
+How consumers use it
+- Retrieval: call token getters (e.g., “GetTaskBarTokens”) to obtain a typed token set for a feature area.
+- Application: apply tokens to controls/elements (e.g., colors, stroke thickness, shadow params).
+- Fallbacks: token construction can merge active theme values with sensible defaults when theme values are missing.
+- Refresh: when the theme changes, re-query the service to get updated token values.
+
+Migration tips
+- Instead of reading colors/metrics directly from a theme model inside UI components, depend on IDesignTokenService.
+- Keep UI code focused on rendering logic; push parameter selection and normalization into the token service.
+- Add new token groups in DesignTokenService to support new component families (e.g., custom annotations), and expose them via IDesignTokenService.
+
+Outcomes
+- Strongly-typed, reusable, and consistent parameters across the whole Gantt UI.
+- Clear separation between theme management and UI rendering code.
+- Easier maintenance and greater flexibility for theme evolution.

@@ -18,6 +18,7 @@ namespace GPM.Gantt.Demo
 
         public ShapesDemoWindow()
         {
+            // Since there's no XAML file for this window, we don't call InitializeComponent()
             // InitializeComponent();
             
             _tasks = new ObservableCollection<GanttTask>();

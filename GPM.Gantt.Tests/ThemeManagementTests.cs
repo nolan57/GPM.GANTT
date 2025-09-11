@@ -1,68 +1,67 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using GPM.Gantt.Models;
 using GPM.Gantt.Services;
 using System.Windows.Media;
+using System.Linq;
 
 namespace GPM.Gantt.Tests
 {
     /// <summary>
     /// Unit tests for theme management functionality.
     /// </summary>
-    [TestClass]
     public class ThemeManagementTests
     {
         private IThemeService _themeService = null!;
 
-        [TestInitialize]
-        public void TestInitialize()
+        public ThemeManagementTests()
         {
             _themeService = new ThemeService();
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemeService_ShouldProvideBuiltInThemes()
         {
             // Arrange & Act
             var availableThemes = _themeService.GetAvailableThemes().ToList();
 
             // Assert
-            Assert.IsTrue(availableThemes.Contains("Default"));
-            Assert.IsTrue(availableThemes.Contains("Dark"));
-            Assert.IsTrue(availableThemes.Contains("Light"));
-            Assert.IsTrue(availableThemes.Contains("Modern"));
-            Assert.AreEqual(4, availableThemes.Count);
+            Assert.Contains("Default", availableThemes);
+            Assert.Contains("Dark", availableThemes);
+            Assert.Contains("Light", availableThemes);
+            Assert.Contains("Modern", availableThemes);
+            Assert.Equal(4, availableThemes.Count);
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemeService_ShouldReturnValidDefaultTheme()
         {
             // Arrange & Act
             var defaultTheme = _themeService.GetTheme("Default");
 
             // Assert
-            Assert.IsNotNull(defaultTheme);
-            Assert.AreEqual("Default", defaultTheme.Name);
-            Assert.IsNotNull(defaultTheme.Background);
-            Assert.IsNotNull(defaultTheme.Grid);
-            Assert.IsNotNull(defaultTheme.Task);
-            Assert.IsNotNull(defaultTheme.TimeScale);
-            Assert.IsNotNull(defaultTheme.Selection);
+            Assert.NotNull(defaultTheme);
+            Assert.Equal("Default", defaultTheme.Name);
+            Assert.NotNull(defaultTheme.Background);
+            Assert.NotNull(defaultTheme.Grid);
+            Assert.NotNull(defaultTheme.Task);
+            Assert.NotNull(defaultTheme.TimeScale);
+            Assert.NotNull(defaultTheme.Selection);
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemeService_ShouldReturnValidDarkTheme()
         {
             // Arrange & Act
             var darkTheme = _themeService.GetTheme("Dark");
 
             // Assert
-            Assert.IsNotNull(darkTheme);
-            Assert.AreEqual("Dark", darkTheme.Name);
-            Assert.AreEqual(Color.FromRgb(30, 30, 30), darkTheme.Background.PrimaryColor);
-            Assert.AreEqual(Color.FromRgb(40, 40, 40), darkTheme.TimeScale.BackgroundColor);
+            Assert.NotNull(darkTheme);
+            Assert.Equal("Dark", darkTheme.Name);
+            Assert.Equal(Color.FromRgb(30, 30, 30), darkTheme.Background.PrimaryColor);
+            Assert.Equal(Color.FromRgb(40, 40, 40), darkTheme.TimeScale.BackgroundColor);
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemeService_ShouldAllowCustomThemeCreation()
         {
             // Arrange
@@ -76,11 +75,11 @@ namespace GPM.Gantt.Tests
             var retrievedTheme = _themeService.GetTheme("CustomBlue");
 
             // Assert
-            Assert.IsNotNull(retrievedTheme);
-            Assert.AreEqual("CustomBlue", retrievedTheme.Name);
+            Assert.NotNull(retrievedTheme);
+            Assert.Equal("CustomBlue", retrievedTheme.Name);
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemeService_ShouldHandleCurrentThemeChanges()
         {
             // Arrange
@@ -99,13 +98,13 @@ namespace GPM.Gantt.Tests
             var currentTheme = _themeService.GetCurrentTheme();
 
             // Assert
-            Assert.IsTrue(themeChangedEventFired);
-            Assert.IsNotNull(newTheme);
-            Assert.AreEqual("Dark", currentTheme.Name);
-            Assert.AreEqual("Dark", newTheme.Name);
+            Assert.True(themeChangedEventFired);
+            Assert.NotNull(newTheme);
+            Assert.Equal("Dark", currentTheme.Name);
+            Assert.Equal("Dark", newTheme.Name);
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemeManager_ShouldProvideStaticAccess()
         {
             // Arrange & Act
@@ -114,12 +113,12 @@ namespace GPM.Gantt.Tests
             var currentTheme = ThemeManager.GetCurrentTheme();
 
             // Assert
-            Assert.IsTrue(availableThemes.Count >= 4);
-            Assert.IsNotNull(defaultTheme);
-            Assert.IsNotNull(currentTheme);
+            Assert.True(availableThemes.Count >= 4);
+            Assert.NotNull(defaultTheme);
+            Assert.NotNull(currentTheme);
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemeFactory_ShouldCreateAllBuiltInThemes()
         {
             // Arrange & Act
@@ -129,13 +128,13 @@ namespace GPM.Gantt.Tests
             var modernTheme = GanttThemeFactory.CreateModern();
 
             // Assert
-            Assert.AreEqual("Default", defaultTheme.Name);
-            Assert.AreEqual("Dark", darkTheme.Name);
-            Assert.AreEqual("Light", lightTheme.Name);
-            Assert.AreEqual("Modern", modernTheme.Name);
+            Assert.Equal("Default", defaultTheme.Name);
+            Assert.Equal("Dark", darkTheme.Name);
+            Assert.Equal("Light", lightTheme.Name);
+            Assert.Equal("Modern", modernTheme.Name);
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemeFactory_ShouldCreateCustomPaletteTheme()
         {
             // Arrange
@@ -148,12 +147,12 @@ namespace GPM.Gantt.Tests
                 primaryColor, secondaryColor, accentColor, "CustomPalette");
 
             // Assert
-            Assert.AreEqual("CustomPalette", customTheme.Name);
-            Assert.AreEqual(primaryColor, customTheme.Task.DefaultColor);
-            Assert.AreEqual(secondaryColor, customTheme.Task.CompletedColor);
+            Assert.Equal("CustomPalette", customTheme.Name);
+            Assert.Equal(primaryColor, customTheme.Task.DefaultColor);
+            Assert.Equal(secondaryColor, customTheme.Task.CompletedColor);
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemeClone_ShouldCreateIndependentCopy()
         {
             // Arrange
@@ -165,9 +164,9 @@ namespace GPM.Gantt.Tests
             clonedTheme.Task.DefaultColor = Colors.Red;
 
             // Assert
-            Assert.AreEqual("Default", originalTheme.Name);
-            Assert.AreEqual("ModifiedClone", clonedTheme.Name);
-            Assert.AreNotEqual(originalTheme.Task.DefaultColor, clonedTheme.Task.DefaultColor);
+            Assert.Equal("Default", originalTheme.Name);
+            Assert.Equal("ModifiedClone", clonedTheme.Name);
+            Assert.NotEqual(originalTheme.Task.DefaultColor, clonedTheme.Task.DefaultColor);
         }
     }
 }

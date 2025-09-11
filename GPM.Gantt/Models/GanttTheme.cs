@@ -204,6 +204,31 @@ namespace GPM.Gantt.Models
         public bool EnableShadow { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets the shadow color for task bars.
+        /// </summary>
+        public Color ShadowColor { get; set; } = Colors.Black;
+
+        /// <summary>
+        /// Gets or sets the shadow blur radius for task bars.
+        /// </summary>
+        public double ShadowBlurRadius { get; set; } = 8.0;
+
+        /// <summary>
+        /// Gets or sets the shadow depth for task bars.
+        /// </summary>
+        public double ShadowDepth { get; set; } = 2.0;
+
+        /// <summary>
+        /// Gets or sets the shadow opacity for task bars.
+        /// </summary>
+        public double ShadowOpacity { get; set; } = 0.3;
+
+        /// <summary>
+        /// Gets or sets the shadow direction for task bars.
+        /// </summary>
+        public double ShadowDirection { get; set; } = 315.0;
+
+        /// <summary>
         /// Creates a copy of the current task theme.
         /// </summary>
         public TaskTheme Clone()
@@ -220,7 +245,12 @@ namespace GPM.Gantt.Models
                 TextColor = TextColor,
                 FontFamily = FontFamily,
                 FontSize = FontSize,
-                EnableShadow = EnableShadow
+                EnableShadow = EnableShadow,
+                ShadowColor = ShadowColor,
+                ShadowBlurRadius = ShadowBlurRadius,
+                ShadowDepth = ShadowDepth,
+                ShadowOpacity = ShadowOpacity,
+                ShadowDirection = ShadowDirection
             };
         }
     }

@@ -637,3 +637,21 @@ ganttContainer.TimeSegmentExpansions.Add(expansion);
 - All service operations are async and support cancellation tokens
 - UI updates are automatically marshaled to the UI thread in ViewModels
 - The library is designed to be used from the UI thread for WPF controls
+
+## Design Token Service API
+The Design Token Service exposes theme-derived, strongly-typed parameters for multiple Gantt subsystems.
+
+Interfaces and classes
+- IDesignTokenService: contract for retrieving token groups
+- DesignTokenService: default implementation that reads from the active theme and normalizes values
+
+Common methods (examples)
+- GetTaskBarTokens(): returns token set for task bars (fills, strokes, corner radii, shadows, etc.)
+- GetGridTokens(): returns token set for grid rows/cells (colors, alternation, hover/selection)
+- GetTimeScaleTokens(): returns token set for multi-level time scale (font, tick colors)
+- GetDependencyLineTokens(): returns token set for dependency lines (stroke, arrow style)
+
+Usage pattern
+- Acquire an instance of IDesignTokenService (via your composition root or service locator used in the project).
+- Call the relevant getter and apply tokens to your rendering logic.
+- Re-fetch tokens when ThemeManager changes the current theme.

@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using GPM.Gantt.Models;
 using GPM.Gantt.Utilities;
 using System;
@@ -10,10 +10,9 @@ namespace GPM.Gantt.Tests
     /// <summary>
     /// Unit tests for the TimelineCalculator utility class.
     /// </summary>
-    [TestClass]
     public class TimelineCalculatorTests
     {
-        [TestMethod]
+        [Fact]
         public void GenerateTicks_DailyUnit_ReturnsCorrectTicks()
         {
             // Arrange
@@ -24,12 +23,12 @@ namespace GPM.Gantt.Tests
             var ticks = TimelineCalculator.GenerateTicks(start, end, TimeUnit.Day);
             
             // Assert
-            Assert.AreEqual(5, ticks.Count);
-            Assert.AreEqual(new DateTime(2024, 1, 1), ticks[0]);
-            Assert.AreEqual(new DateTime(2024, 1, 5), ticks[4]);
+            Assert.Equal(5, ticks.Count);
+            Assert.Equal(new DateTime(2024, 1, 1), ticks[0]);
+            Assert.Equal(new DateTime(2024, 1, 5), ticks[4]);
         }
         
-        [TestMethod]
+        [Fact]
         public void GenerateTicks_HourlyUnit_ReturnsCorrectTicks()
         {
             // Arrange
@@ -40,12 +39,12 @@ namespace GPM.Gantt.Tests
             var ticks = TimelineCalculator.GenerateTicks(start, end, TimeUnit.Hour);
             
             // Assert
-            Assert.AreEqual(5, ticks.Count);
-            Assert.AreEqual(new DateTime(2024, 1, 1, 10, 0, 0), ticks[0]);
-            Assert.AreEqual(new DateTime(2024, 1, 1, 14, 0, 0), ticks[4]);
+            Assert.Equal(5, ticks.Count);
+            Assert.Equal(new DateTime(2024, 1, 1, 10, 0, 0), ticks[0]);
+            Assert.Equal(new DateTime(2024, 1, 1, 14, 0, 0), ticks[4]);
         }
         
-        [TestMethod]
+        [Fact]
         public void GenerateTicks_WeeklyUnit_ReturnsCorrectTicks()
         {
             // Arrange
@@ -56,18 +55,18 @@ namespace GPM.Gantt.Tests
             var ticks = TimelineCalculator.GenerateTicks(start, end, TimeUnit.Week);
             
             // Assert
-            Assert.IsTrue(ticks.Count >= 3);
+            Assert.True(ticks.Count >= 3);
             // Check that all ticks are at the start of weeks (assuming culture uses Monday as first day)
             foreach (var tick in ticks)
             {
                 var dayOfWeek = tick.DayOfWeek;
                 // Allow for different cultures - could be Sunday or Monday
-                Assert.IsTrue(dayOfWeek == DayOfWeek.Sunday || dayOfWeek == DayOfWeek.Monday, 
+                Assert.True(dayOfWeek == DayOfWeek.Sunday || dayOfWeek == DayOfWeek.Monday, 
                     $"Expected week start day, got {dayOfWeek} for {tick:yyyy-MM-dd}");
             }
         }
         
-        [TestMethod]
+        [Fact]
         public void GenerateTicks_MonthlyUnit_ReturnsCorrectTicks()
         {
             // Arrange
@@ -78,13 +77,13 @@ namespace GPM.Gantt.Tests
             var ticks = TimelineCalculator.GenerateTicks(start, end, TimeUnit.Month);
             
             // Assert
-            Assert.AreEqual(3, ticks.Count);
-            Assert.AreEqual(new DateTime(2024, 1, 1), ticks[0]);
-            Assert.AreEqual(new DateTime(2024, 2, 1), ticks[1]);
-            Assert.AreEqual(new DateTime(2024, 3, 1), ticks[2]);
+            Assert.Equal(3, ticks.Count);
+            Assert.Equal(new DateTime(2024, 1, 1), ticks[0]);
+            Assert.Equal(new DateTime(2024, 2, 1), ticks[1]);
+            Assert.Equal(new DateTime(2024, 3, 1), ticks[2]);
         }
         
-        [TestMethod]
+        [Fact]
         public void AlignToUnitFloor_Day_AlignsToMidnight()
         {
             // Arrange
@@ -94,10 +93,10 @@ namespace GPM.Gantt.Tests
             var aligned = TimelineCalculator.AlignToUnitFloor(dateTime, TimeUnit.Day);
             
             // Assert
-            Assert.AreEqual(new DateTime(2024, 1, 15, 0, 0, 0), aligned);
+            Assert.Equal(new DateTime(2024, 1, 15, 0, 0, 0), aligned);
         }
         
-        [TestMethod]
+        [Fact]
         public void AlignToUnitFloor_Hour_AlignsToHourStart()
         {
             // Arrange
@@ -107,10 +106,10 @@ namespace GPM.Gantt.Tests
             var aligned = TimelineCalculator.AlignToUnitFloor(dateTime, TimeUnit.Hour);
             
             // Assert
-            Assert.AreEqual(new DateTime(2024, 1, 15, 14, 0, 0), aligned);
+            Assert.Equal(new DateTime(2024, 1, 15, 14, 0, 0), aligned);
         }
         
-        [TestMethod]
+        [Fact]
         public void AlignToUnitFloor_Month_AlignsToFirstDay()
         {
             // Arrange
@@ -120,10 +119,10 @@ namespace GPM.Gantt.Tests
             var aligned = TimelineCalculator.AlignToUnitFloor(dateTime, TimeUnit.Month);
             
             // Assert
-            Assert.AreEqual(new DateTime(2024, 3, 1, 0, 0, 0), aligned);
+            Assert.Equal(new DateTime(2024, 3, 1, 0, 0, 0), aligned);
         }
         
-        [TestMethod]
+        [Fact]
         public void AlignToUnitCeiling_Day_AlignsToNextDay()
         {
             // Arrange
@@ -133,10 +132,10 @@ namespace GPM.Gantt.Tests
             var aligned = TimelineCalculator.AlignToUnitCeiling(dateTime, TimeUnit.Day);
             
             // Assert
-            Assert.AreEqual(new DateTime(2024, 1, 16, 0, 0, 0), aligned);
+            Assert.Equal(new DateTime(2024, 1, 16, 0, 0, 0), aligned);
         }
         
-        [TestMethod]
+        [Fact]
         public void AlignToUnitCeiling_AlreadyAligned_ReturnsSameValue()
         {
             // Arrange
@@ -146,10 +145,10 @@ namespace GPM.Gantt.Tests
             var aligned = TimelineCalculator.AlignToUnitCeiling(dateTime, TimeUnit.Day);
             
             // Assert
-            Assert.AreEqual(dateTime, aligned);
+            Assert.Equal(dateTime, aligned);
         }
         
-        [TestMethod]
+        [Fact]
         public void FormatTick_Day_ReturnsCorrectFormat()
         {
             // Arrange
@@ -159,10 +158,10 @@ namespace GPM.Gantt.Tests
             var formatted = TimelineCalculator.FormatTick(dateTime, TimeUnit.Day);
             
             // Assert
-            Assert.IsTrue(formatted.Contains("Mar 15"));
+            Assert.Contains("Mar 15", formatted);
         }
         
-        [TestMethod]
+        [Fact]
         public void FormatTick_Day_WithCustomDateFormat_ReturnsCorrectFormat()
         {
             // Arrange
@@ -173,10 +172,10 @@ namespace GPM.Gantt.Tests
             var formatted = TimelineCalculator.FormatTick(dateTime, TimeUnit.Day, customDateFormat, null);
             
             // Assert
-            Assert.AreEqual("15/03/2024", formatted);
+            Assert.Equal("15/03/2024", formatted);
         }
         
-        [TestMethod]
+        [Fact]
         public void FormatTick_Hour_WithCustomTimeFormat_ReturnsCorrectFormat()
         {
             // Arrange
@@ -188,10 +187,10 @@ namespace GPM.Gantt.Tests
             var formatted = TimelineCalculator.FormatTick(dateTime, TimeUnit.Hour, customDateFormat, customTimeFormat);
             
             // Assert
-            Assert.AreEqual("15 Mar 02:30 PM", formatted);
+            Assert.Equal("15 Mar 02:30 PM", formatted);
         }
         
-        [TestMethod]
+        [Fact]
         public void FormatTick_Month_ReturnsCorrectFormat()
         {
             // Arrange
@@ -201,10 +200,10 @@ namespace GPM.Gantt.Tests
             var formatted = TimelineCalculator.FormatTick(dateTime, TimeUnit.Month);
             
             // Assert
-            Assert.IsTrue(formatted.Contains("2024 Mar"));
+            Assert.Contains("2024 Mar", formatted);
         }
         
-        [TestMethod]
+        [Fact]
         public void FormatTick_Month_WithCustomFormat_ReturnsCorrectFormat()
         {
             // Arrange
@@ -215,10 +214,10 @@ namespace GPM.Gantt.Tests
             var formatted = TimelineCalculator.FormatTick(dateTime, TimeUnit.Month, customDateFormat, null);
             
             // Assert
-            Assert.AreEqual("Mar 2024", formatted);
+            Assert.Equal("Mar 2024", formatted);
         }
         
-        [TestMethod]
+        [Fact]
         public void FormatTick_WithNullCustomFormats_UsesDefaults()
         {
             // Arrange
@@ -228,10 +227,10 @@ namespace GPM.Gantt.Tests
             var formatted = TimelineCalculator.FormatTick(dateTime, TimeUnit.Day, null, null);
             
             // Assert
-            Assert.IsTrue(formatted.Contains("Mar 15"));
+            Assert.Contains("Mar 15", formatted);
         }
         
-        [TestMethod]
+        [Fact]
         public void FormatTick_WithEmptyCustomFormats_UsesDefaults()
         {
             // Arrange
@@ -241,10 +240,10 @@ namespace GPM.Gantt.Tests
             var formatted = TimelineCalculator.FormatTick(dateTime, TimeUnit.Day, "", "");
             
             // Assert
-            Assert.IsTrue(formatted.Contains("Mar 15"));
+            Assert.Contains("Mar 15", formatted);
         }
         
-        [TestMethod]
+        [Fact]
         public void IsWeekend_Saturday_ReturnsTrue()
         {
             // Arrange
@@ -254,10 +253,10 @@ namespace GPM.Gantt.Tests
             var isWeekend = TimelineCalculator.IsWeekend(saturday);
             
             // Assert
-            Assert.IsTrue(isWeekend);
+            Assert.True(isWeekend);
         }
         
-        [TestMethod]
+        [Fact]
         public void IsWeekend_Monday_ReturnsFalse()
         {
             // Arrange
@@ -267,27 +266,27 @@ namespace GPM.Gantt.Tests
             var isWeekend = TimelineCalculator.IsWeekend(monday);
             
             // Assert
-            Assert.IsFalse(isWeekend);
+            Assert.False(isWeekend);
         }
         
-        [TestMethod]
+        [Fact]
         public void GetUnitDuration_Day_ReturnsOneDay()
         {
             // Act
             var duration = TimelineCalculator.GetUnitDuration(TimeUnit.Day);
             
             // Assert
-            Assert.AreEqual(TimeSpan.FromDays(1), duration);
+            Assert.Equal(TimeSpan.FromDays(1), duration);
         }
         
-        [TestMethod]
+        [Fact]
         public void GetUnitDuration_Hour_ReturnsOneHour()
         {
             // Act
             var duration = TimelineCalculator.GetUnitDuration(TimeUnit.Hour);
             
             // Assert
-            Assert.AreEqual(TimeSpan.FromHours(1), duration);
+            Assert.Equal(TimeSpan.FromHours(1), duration);
         }
     }
 }

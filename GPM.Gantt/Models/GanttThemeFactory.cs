@@ -222,7 +222,13 @@ namespace GPM.Gantt.Models
                     TextColor = Colors.White,
                     FontFamily = "Segoe UI",
                     FontSize = 12.0,
-                    EnableShadow = true
+                    EnableShadow = true,
+                    // Make the shadow more visible in Modern theme
+                    ShadowColor = Colors.Black,
+                    ShadowBlurRadius = 12.0,
+                    ShadowDepth = 3.0,
+                    ShadowOpacity = 0.45,
+                    ShadowDirection = 315.0
                 },
                 TimeScale = new TimeScaleTheme
                 {

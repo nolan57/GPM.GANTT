@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using GPM.Gantt;
 using GPM.Gantt.Configuration;
 using GPM.Gantt.Models;
@@ -18,16 +18,14 @@ namespace GPM.Gantt.Tests
     /// Comprehensive performance tests for the Gantt chart framework.
     /// Tests various performance optimization features and measures their effectiveness.
     /// </summary>
-    [TestClass]
-    public class PerformanceTests
+    public class PerformanceTests : IDisposable
     {
         private GanttContainer? _ganttContainer;
         private IPerformanceService? _performanceService;
         private IPerformanceDiagnostics? _diagnostics;
         private IMemoryOptimization? _memoryOptimization;
         
-        [TestInitialize]
-        public void Setup()
+        public PerformanceTests()
         {
             _ganttContainer = new GanttContainer();
             _performanceService = new PerformanceService();
@@ -38,14 +36,17 @@ namespace GPM.Gantt.Tests
             _diagnostics.StartMonitoring();
         }
         
-        [TestCleanup]
-        public void Cleanup()
+        public void Dispose()
         {
             _diagnostics?.StopMonitoring();
             (_memoryOptimization as IDisposable)?.Dispose();
+            _ganttContainer = null;
+            _performanceService = null;
+            _diagnostics = null;
+            _memoryOptimization = null;
         }
         
-        [TestMethod]
+        [Fact]
         public void TestLargeDatasetPerformance()
         {
             // Arrange
@@ -67,13 +68,13 @@ namespace GPM.Gantt.Tests
             // Assert
             var metrics = _diagnostics!.GetCurrentMetrics();
             
-            Assert.IsTrue(stopwatch.ElapsedMilliseconds < 2000, $"Large dataset layout took too long: {stopwatch.ElapsedMilliseconds}ms");
-            Assert.IsTrue(metrics.ManagedMemoryMB < 200, $"Memory usage too high: {metrics.ManagedMemoryMB:F1} MB");
+            Assert.True(stopwatch.ElapsedMilliseconds < 2000, $"Large dataset layout took too long: {stopwatch.ElapsedMilliseconds}ms");
+            Assert.True(metrics.ManagedMemoryMB < 200, $"Memory usage too high: {metrics.ManagedMemoryMB:F1} MB");
             
             Console.WriteLine($"Large dataset performance: {stopwatch.ElapsedMilliseconds}ms, Memory: {metrics.ManagedMemoryMB:F1} MB");
         }
         
-        [TestMethod]
+        [Fact]
         public void TestVirtualizationEffectiveness()
         {
             // Arrange
@@ -111,10 +112,10 @@ namespace GPM.Gantt.Tests
             Console.WriteLine($"Without virtualization: {timeWithoutVirt}ms, {memWithoutVirt:F1} MB");
             
             // Virtualization should be faster for large datasets
-            Assert.IsTrue(timeWithVirt < timeWithoutVirt * 2, "Virtualization should improve performance");
+            Assert.True(timeWithVirt < timeWithoutVirt * 2, "Virtualization should improve performance");
         }
         
-        [TestMethod]
+        [Fact]
         public void TestCachingEffectiveness()
         {
             // Arrange
@@ -133,18 +134,18 @@ namespace GPM.Gantt.Tests
             stopwatch2.Stop();
             
             // Assert
-            Assert.AreEqual(ticks1.Count, ticks2.Count, "Cached ticks should be identical");
-            Assert.IsTrue(stopwatch2.ElapsedMilliseconds < stopwatch1.ElapsedMilliseconds, 
+            Assert.Equal(ticks1.Count, ticks2.Count);
+            Assert.True(stopwatch2.ElapsedMilliseconds < stopwatch1.ElapsedMilliseconds, 
                 "Cached call should be faster than initial call");
             
             var metrics = _performanceService.GetPerformanceMetrics();
-            Assert.IsTrue(metrics.CacheHitRatio > 0, "Cache hit ratio should be greater than 0");
+            Assert.True(metrics.CacheHitRatio > 0, "Cache hit ratio should be greater than 0");
             
             Console.WriteLine($"First call: {stopwatch1.ElapsedMilliseconds}ms, Second call: {stopwatch2.ElapsedMilliseconds}ms");
             Console.WriteLine($"Cache hit ratio: {metrics.CacheHitRatio:P}");
         }
         
-        [TestMethod]
+        [Fact]
         public void TestMemoryOptimization()
         {
             // Arrange
@@ -166,7 +167,7 @@ namespace GPM.Gantt.Tests
             var memoryFreed = memoryAfterLoad - memoryAfterOptimization;
             var memoryFreedMB = memoryFreed / (1024.0 * 1024.0);
             
-            Assert.IsTrue(memoryFreed > 0, "Memory optimization should free some memory");
+            Assert.True(memoryFreed > 0, "Memory optimization should free some memory");
             
             Console.WriteLine($"Memory before: {memoryBefore / (1024 * 1024):F1} MB");
             Console.WriteLine($"Memory after load: {memoryAfterLoad / (1024 * 1024):F1} MB");
@@ -174,7 +175,7 @@ namespace GPM.Gantt.Tests
             Console.WriteLine($"Memory freed: {memoryFreedMB:F1} MB");
         }
         
-        [TestMethod]
+        [Fact]
         public void TestPerformanceDiagnostics()
         {
             // Arrange & Act
@@ -190,16 +191,16 @@ namespace GPM.Gantt.Tests
             
             // Assert
             var metrics = _diagnostics!.GetCurrentMetrics();
-            Assert.IsTrue(metrics.TotalMeasurements > 0, "Should have recorded measurements");
-            Assert.IsTrue(metrics.EventStatistics.ContainsKey("TestOperation"), "Should contain test operation statistics");
+            Assert.True(metrics.TotalMeasurements > 0, "Should have recorded measurements");
+            Assert.True(metrics.EventStatistics.ContainsKey("TestOperation"), "Should contain test operation statistics");
             
             var testOpStats = metrics.EventStatistics["TestOperation"];
-            Assert.IsTrue(testOpStats.AverageMs >= 100, $"Average duration should be at least 100ms, was {testOpStats.AverageMs}ms");
+            Assert.True(testOpStats.AverageMs >= 100, $"Average duration should be at least 100ms, was {testOpStats.AverageMs}ms");
             
             Console.WriteLine($"Test operation stats: Count={testOpStats.Count}, Average={testOpStats.AverageMs:F1}ms");
         }
         
-        [TestMethod]
+        [Fact]
         public void TestElementPoolingEfficiency()
         {
             // This test would require access to internal ElementPool statistics
@@ -226,13 +227,13 @@ namespace GPM.Gantt.Tests
             var expectedLinearGrowth = memoryUsages[1] - memoryUsages[0];
             expectedLinearGrowth *= 9; // 9 additional iterations
             
-            Assert.IsTrue(memoryGrowth < expectedLinearGrowth * 0.8, 
+            Assert.True(memoryGrowth < expectedLinearGrowth * 0.8, 
                 "Element pooling should reduce memory growth compared to linear allocation");
             
             Console.WriteLine($"Memory growth: {memoryGrowth / (1024 * 1024):F1} MB vs expected linear: {expectedLinearGrowth / (1024 * 1024):F1} MB");
         }
         
-        [TestMethod]
+        [Fact]
         public void TestDebouncingEffectiveness()
         {
             // Arrange
@@ -253,13 +254,13 @@ namespace GPM.Gantt.Tests
             stopwatch.Stop();
             
             // Assert
-            Assert.AreEqual(1, executionCount, "Debounced operation should execute only once");
-            Assert.IsTrue(stopwatch.ElapsedMilliseconds >= 100, "Debounced operation should respect delay");
+            Assert.Equal(1, executionCount);
+            Assert.True(stopwatch.ElapsedMilliseconds >= 100, "Debounced operation should respect delay");
             
             Console.WriteLine($"Debouncing test: {executionCount} executions in {stopwatch.ElapsedMilliseconds}ms");
         }
         
-        [TestMethod]
+        [Fact]
         public void TestPerformanceRecommendations()
         {
             // Arrange - create memory pressure
@@ -276,7 +277,7 @@ namespace GPM.Gantt.Tests
             var recommendations = _diagnostics!.GetRecommendations();
             
             // Assert
-            Assert.IsNotNull(recommendations, "Should provide recommendations");
+            Assert.NotNull(recommendations);
             
             var recommendationsList = recommendations.ToList();
             if (recommendationsList.Any())
@@ -285,13 +286,13 @@ namespace GPM.Gantt.Tests
                 foreach (var rec in recommendationsList)
                 {
                     Console.WriteLine($"- {rec.Title} ({rec.Severity}): {rec.Description}");
-                    Assert.IsFalse(string.IsNullOrEmpty(rec.Title), "Recommendation should have a title");
-                    Assert.IsFalse(string.IsNullOrEmpty(rec.Description), "Recommendation should have a description");
+                    Assert.False(string.IsNullOrEmpty(rec.Title), "Recommendation should have a title");
+                    Assert.False(string.IsNullOrEmpty(rec.Description), "Recommendation should have a description");
                 }
             }
         }
         
-        [TestMethod]
+        [Fact]
         public void TestOverallPerformanceImprovement()
         {
             // This is an integration test that measures overall performance
@@ -323,8 +324,8 @@ namespace GPM.Gantt.Tests
             var averageMemory = memoryUsages.Average() / (1024.0 * 1024.0);
             
             // Performance benchmarks (adjust based on your requirements)
-            Assert.IsTrue(averageTime < 1000, $"Average layout time should be under 1000ms, was {averageTime:F1}ms");
-            Assert.IsTrue(averageMemory < 150, $"Average memory usage should be under 150MB, was {averageMemory:F1}MB");
+            Assert.True(averageTime < 1000, $"Average layout time should be under 1000ms, was {averageTime:F1}ms");
+            Assert.True(averageMemory < 150, $"Average memory usage should be under 150MB, was {averageMemory:F1}MB");
             
             Console.WriteLine($"Overall performance - Average time: {averageTime:F1}ms, Average memory: {averageMemory:F1}MB");
             

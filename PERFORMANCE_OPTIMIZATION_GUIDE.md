@@ -43,6 +43,94 @@ memoryService.EnableAutoOptimization(TimeSpan.FromMinutes(5));
 memoryService.StartMemoryPressureMonitoring();
 ```
 
+## Configuration Simplification Guide
+
+### Quick Start Configurations
+
+For most users, we recommend starting with one of our preset configurations:
+
+```csharp
+// For large datasets with thousands of tasks
+var config = GanttConfiguration.ForLargeDatasets(maxVisibleTasks: 500);
+
+// For detailed project planning with fewer tasks
+var config = GanttConfiguration.ForDetailedPlanning();
+
+// For general use with balanced settings
+var config = GanttConfiguration.Balanced();
+```
+
+### Custom Configuration with Validation
+
+When creating custom configurations, always validate them:
+
+```csharp
+var config = new GanttConfiguration
+{
+    Rendering = new RenderingConfiguration
+    {
+        EnableVirtualization = true,
+        MaxVisibleTasks = 1000,
+        PerformanceLevel = PerformanceLevel.Balanced,
+        EnableGpuAcceleration = false
+    },
+    TimeScale = new TimeScaleConfiguration
+    {
+        DefaultTimeUnit = TimeUnit.Day,
+        HighlightWeekends = true
+    }
+};
+
+// Validate the configuration
+var validationResult = config.ValidateWithResult();
+if (!validationResult.IsValid)
+{
+    foreach (var error in validationResult.Errors)
+    {
+        Console.WriteLine($"Configuration Error: {error}");
+    }
+}
+```
+
+### Performance-Focused Configuration
+
+For performance-critical applications:
+
+```csharp
+var config = new GanttConfiguration
+{
+    Rendering = RenderingConfiguration.HighPerformance(),
+    TimeScale = new TimeScaleConfiguration
+    {
+        // Use coarser time units for better performance with large date ranges
+        DefaultTimeUnit = TimeUnit.Month
+    }
+};
+
+// Configure performance services
+var performanceService = new PerformanceService();
+performanceService.GetMemoryOptimization().EnableAutoOptimization(TimeSpan.FromMinutes(5));
+performanceService.GetDiagnostics().StartMonitoring();
+```
+
+### Fluent Configuration API
+
+For more complex configuration scenarios, you can use the fluent API:
+
+```csharp
+var config = GanttConfiguration.CreateBuilder()
+    .ForLargeDatasets(500)
+    .WithTimeScale(ts => {
+        ts.DefaultTimeUnit = TimeUnit.Week;
+        ts.HighlightWeekends = true;
+    })
+    .WithRendering(r => {
+        r.EnablePerformanceMonitoring = true;
+        r.LayoutDebounceDelay = 200;
+    })
+    .Build();
+```
+
 ## Virtualization
 
 ### When to Use Virtualization
